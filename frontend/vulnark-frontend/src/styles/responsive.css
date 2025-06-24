@@ -1,0 +1,248 @@
+/* 全局响应式样式 */
+
+/* 响应式断点定义 */
+:root {
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1600px;
+}
+
+/* 全局响应式工具类 */
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* 隐藏/显示工具类 */
+.hidden-xs {
+  display: block;
+}
+
+.hidden-sm {
+  display: block;
+}
+
+.hidden-md {
+  display: block;
+}
+
+.hidden-lg {
+  display: block;
+}
+
+.hidden-xl {
+  display: block;
+}
+
+/* 超小屏幕 (< 480px) */
+@media (max-width: 479px) {
+  .hidden-xs {
+    display: none !important;
+  }
+  
+  .responsive-container {
+    padding: 0 8px;
+  }
+  
+  /* 文字大小调整 */
+  .text-responsive {
+    font-size: 12px;
+  }
+  
+  /* 按钮大小调整 */
+  .btn-responsive {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+/* 小屏幕 (480px - 575px) */
+@media (min-width: 480px) and (max-width: 575px) {
+  .hidden-sm {
+    display: none !important;
+  }
+  
+  .responsive-container {
+    padding: 0 12px;
+  }
+  
+  .text-responsive {
+    font-size: 13px;
+  }
+  
+  .btn-responsive {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* 中等屏幕 (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .hidden-md {
+    display: none !important;
+  }
+  
+  .responsive-container {
+    padding: 0 16px;
+  }
+  
+  .text-responsive {
+    font-size: 14px;
+  }
+  
+  .btn-responsive {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+/* 大屏幕 (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .hidden-lg {
+    display: none !important;
+  }
+  
+  .responsive-container {
+    padding: 0 20px;
+  }
+  
+  .text-responsive {
+    font-size: 15px;
+  }
+  
+  .btn-responsive {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+
+/* 超大屏幕 (>= 992px) */
+@media (min-width: 992px) {
+  .hidden-xl {
+    display: none !important;
+  }
+  
+  .responsive-container {
+    padding: 0 24px;
+  }
+  
+  .text-responsive {
+    font-size: 16px;
+  }
+  
+  .btn-responsive {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+}
+
+/* 通用响应式工具 */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+/* 间距响应式 */
+.spacing-responsive {
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .spacing-responsive {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .spacing-responsive {
+    padding: 12px;
+  }
+}
+
+/* 卡片响应式 */
+.card-responsive {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .card-responsive {
+    padding: 16px;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-responsive {
+    padding: 12px;
+    border-radius: 4px;
+  }
+}
+
+/* 表格响应式 */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table-responsive table {
+    font-size: 12px;
+  }
+  
+  .table-responsive th,
+  .table-responsive td {
+    padding: 8px 4px;
+  }
+}
+
+/* 网格响应式 */
+.grid-responsive {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-responsive {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

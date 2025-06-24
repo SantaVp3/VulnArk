@@ -1,0 +1,339 @@
+package com.vulnark.service;
+
+import com.vulnark.entity.Asset;
+import com.vulnark.entity.ScanTask;
+import com.vulnark.repository.AssetRepository;
+import com.vulnark.repository.ScanTaskRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@Transactional
+public class ScanService {
+    
+    @Autowired
+    private ScanTaskRepository scanTaskRepository;
+    
+    @Autowired
+    private AssetRepository assetRepository;
+    
+    /**
+     * 创建扫描任务
+     */
+    public ScanTask createScanTask(String name, ScanTask.ScanType type, String targetIp, 
+                                   String targetPorts, Long createdBy, Long projectId) {
+        ScanTask task = new ScanTask();
+        task.setName(name);
+        task.setType(type);
+        task.setTargetIp(targetIp);
+        task.setTargetPorts(targetPorts);
+        task.setCreatedBy(createdBy);
+        task.setProjectId(projectId);
+        task.setStatus(ScanTask.Status.PENDING);
+        
+        return scanTaskRepository.save(task);
+    }
+    
+    /**
+     * 为资产创建扫描任务
+     */
+    public ScanTask createAssetScanTask(Long assetId, ScanTask.ScanType type, Long createdBy) {
+        Asset asset = assetRepository.findByIdAndDeletedFalse(assetId)
+                .orElseThrow(() -> new RuntimeException("资产不存在"));
+        
+        ScanTask task = new ScanTask();
+        task.setName("扫描资产: " + asset.getName());
+        task.setType(type);
+        task.setTargetAssetId(assetId);
+        task.setTargetIp(asset.getIpAddress());
+        task.setTargetDomain(asset.getDomain());
+        task.setTargetPorts(asset.getPort() != null ? asset.getPort().toString() : "1-65535");
+        task.setCreatedBy(createdBy);
+        task.setProjectId(asset.getProjectId());
+        task.setStatus(ScanTask.Status.PENDING);
+        
+        return scanTaskRepository.save(task);
+    }
+    
+    /**
+     * 执行扫描任务
+     */
+    @Async
+    public CompletableFuture<ScanTask> executeScanTask(Long taskId) {
+        ScanTask task = scanTaskRepository.findByIdAndDeletedFalse(taskId)
+                .orElseThrow(() -> new RuntimeException("扫描任务不存在"));
+        
+        // 更新任务状态为运行中
+        task.setStatus(ScanTask.Status.RUNNING);
+        task.setStartTime(LocalDateTime.now());
+        task.setProgress(0);
+        scanTaskRepository.save(task);
+        
+        try {
+            // 根据扫描类型执行不同的扫描
+            String result = performScan(task);
+            
+            // 更新任务结果
+            task.setStatus(ScanTask.Status.COMPLETED);
+            task.setEndTime(LocalDateTime.now());
+            task.setScanResult(result);
+            task.setProgress(100);
+            
+            // 解析扫描结果并更新统计信息
+            parseScanResult(task, result);
+            
+        } catch (Exception e) {
+            // 扫描失败
+            task.setStatus(ScanTask.Status.FAILED);
+            task.setEndTime(LocalDateTime.now());
+            task.setErrorMessage(e.getMessage());
+            task.setProgress(0);
+        }
+        
+        scanTaskRepository.save(task);
+        return CompletableFuture.completedFuture(task);
+    }
+    
+    /**
+     * 执行实际的扫描操作
+     */
+    private String performScan(ScanTask task) throws Exception {
+        StringBuilder result = new StringBuilder();
+        
+        switch (task.getType()) {
+            case PORT_SCAN:
+                result.append(performPortScan(task));
+                break;
+            case VULNERABILITY_SCAN:
+                result.append(performVulnerabilityScan(task));
+                break;
+            case SERVICE_SCAN:
+                result.append(performServiceScan(task));
+                break;
+            case WEB_SCAN:
+                result.append(performWebScan(task));
+                break;
+            case NETWORK_SCAN:
+                result.append(performNetworkScan(task));
+                break;
+            default:
+                throw new RuntimeException("不支持的扫描类型: " + task.getType());
+        }
+        
+        return result.toString();
+    }
+    
+    /**
+     * 端口扫描
+     */
+    private String performPortScan(ScanTask task) throws Exception {
+        String command = String.format("nmap -p %s %s", 
+                task.getTargetPorts() != null ? task.getTargetPorts() : "1-1000", 
+                task.getTargetIp());
+        
+        return executeCommand(command, task);
+    }
+    
+    /**
+     * 漏洞扫描
+     */
+    private String performVulnerabilityScan(ScanTask task) throws Exception {
+        String command = String.format("nmap --script vuln %s", task.getTargetIp());
+        return executeCommand(command, task);
+    }
+    
+    /**
+     * 服务扫描
+     */
+    private String performServiceScan(ScanTask task) throws Exception {
+        String command = String.format("nmap -sV %s", task.getTargetIp());
+        return executeCommand(command, task);
+    }
+    
+    /**
+     * Web扫描
+     */
+    private String performWebScan(ScanTask task) throws Exception {
+        String command = String.format("nmap --script http-enum %s", task.getTargetIp());
+        return executeCommand(command, task);
+    }
+    
+    /**
+     * 网络扫描
+     */
+    private String performNetworkScan(ScanTask task) throws Exception {
+        String command = String.format("nmap -sn %s", task.getTargetIp());
+        return executeCommand(command, task);
+    }
+    
+    /**
+     * 执行命令行命令
+     */
+    private String executeCommand(String command, ScanTask task) throws Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("bash", "-c", command);
+        
+        Process process = processBuilder.start();
+        
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            int lineCount = 0;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+                lineCount++;
+                
+                // 更新进度
+                if (lineCount % 10 == 0) {
+                    task.setProgress(Math.min(90, task.getProgress() + 10));
+                    scanTaskRepository.save(task);
+                }
+            }
+        }
+        
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new RuntimeException("扫描命令执行失败，退出码: " + exitCode);
+        }
+        
+        return output.toString();
+    }
+    
+    /**
+     * 解析扫描结果
+     */
+    private void parseScanResult(ScanTask task, String result) {
+        // 简单的结果解析逻辑
+        int portCount = countOccurrences(result, "open");
+        int serviceCount = countOccurrences(result, "service");
+        int vulnerabilityCount = countOccurrences(result, "VULNERABLE");
+        
+        task.setPortCount(portCount);
+        task.setServiceCount(serviceCount);
+        task.setVulnerabilityCount(vulnerabilityCount);
+        
+        // 如果是资产扫描，更新资产的扫描时间
+        if (task.getTargetAssetId() != null) {
+            assetRepository.findByIdAndDeletedFalse(task.getTargetAssetId())
+                    .ifPresent(asset -> {
+                        asset.setLastScanTime(LocalDateTime.now());
+                        asset.setVulnerabilityCount(vulnerabilityCount);
+                        assetRepository.save(asset);
+                    });
+        }
+    }
+    
+    /**
+     * 计算字符串出现次数
+     */
+    private int countOccurrences(String text, String pattern) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.toLowerCase().indexOf(pattern.toLowerCase(), index)) != -1) {
+            count++;
+            index += pattern.length();
+        }
+        return count;
+    }
+    
+    /**
+     * 获取扫描任务
+     */
+    public Page<ScanTask> getScanTasks(int page, int size, String sortBy, String sortDir) {
+        Sort sort = Sort.by(
+                "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortBy
+        );
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return scanTaskRepository.findByDeletedFalse(pageable);
+    }
+    
+    /**
+     * 根据ID获取扫描任务
+     */
+    public ScanTask getScanTaskById(Long id) {
+        return scanTaskRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("扫描任务不存在"));
+    }
+    
+    /**
+     * 取消扫描任务
+     */
+    public ScanTask cancelScanTask(Long id) {
+        ScanTask task = getScanTaskById(id);
+        if (task.getStatus() == ScanTask.Status.PENDING || task.getStatus() == ScanTask.Status.RUNNING) {
+            task.setStatus(ScanTask.Status.CANCELLED);
+            task.setEndTime(LocalDateTime.now());
+        }
+        return scanTaskRepository.save(task);
+    }
+    
+    /**
+     * 删除扫描任务
+     */
+    public void deleteScanTask(Long id) {
+        ScanTask task = getScanTaskById(id);
+        task.setDeleted(true);
+        scanTaskRepository.save(task);
+    }
+    
+    /**
+     * 获取待执行的任务
+     */
+    public List<ScanTask> getPendingTasks() {
+        return scanTaskRepository.findPendingTasks(LocalDateTime.now());
+    }
+    
+    /**
+     * 获取正在运行的任务
+     */
+    public List<ScanTask> getRunningTasks() {
+        return scanTaskRepository.findRunningTasks();
+    }
+    
+    /**
+     * 获取扫描任务统计信息
+     */
+    public ScanStats getScanStats() {
+        ScanStats stats = new ScanStats();
+        stats.setTotal(scanTaskRepository.countByDeletedFalse());
+        stats.setPending(scanTaskRepository.countByStatusAndDeletedFalse(ScanTask.Status.PENDING));
+        stats.setRunning(scanTaskRepository.countByStatusAndDeletedFalse(ScanTask.Status.RUNNING));
+        stats.setCompleted(scanTaskRepository.countByStatusAndDeletedFalse(ScanTask.Status.COMPLETED));
+        stats.setFailed(scanTaskRepository.countByStatusAndDeletedFalse(ScanTask.Status.FAILED));
+        return stats;
+    }
+    
+    // 内部类：扫描统计信息
+    public static class ScanStats {
+        private long total;
+        private long pending;
+        private long running;
+        private long completed;
+        private long failed;
+        
+        // Getters and Setters
+        public long getTotal() { return total; }
+        public void setTotal(long total) { this.total = total; }
+        public long getPending() { return pending; }
+        public void setPending(long pending) { this.pending = pending; }
+        public long getRunning() { return running; }
+        public void setRunning(long running) { this.running = running; }
+        public long getCompleted() { return completed; }
+        public void setCompleted(long completed) { this.completed = completed; }
+        public long getFailed() { return failed; }
+        public void setFailed(long failed) { this.failed = failed; }
+    }
+}
