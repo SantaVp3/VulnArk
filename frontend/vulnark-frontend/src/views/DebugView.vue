@@ -41,7 +41,7 @@
     <div class="debug-section">
       <h2>路由测试</h2>
       <a-button @click="$router.push('/login')">跳转到登录页</a-button>
-      <a-button @click="$router.push('/dashboard')">跳转到仪表板</a-button>
+      <a-button @click="$router.push('/')">跳转到仪表板</a-button>
       <a-button @click="$router.push('/register')">跳转到注册页</a-button>
     </div>
   </div>

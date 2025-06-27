@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authApi.login({ username, password })
 
-      // API返回的是 { code, message, data, timestamp } 格式
+      // API返回的是 { success, code, message, data, timestamp } 格式
       // data 包含 { token, user }
       const loginData = response.data
       token.value = loginData.token

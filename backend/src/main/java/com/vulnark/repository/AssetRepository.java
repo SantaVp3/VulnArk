@@ -153,11 +153,13 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     List<Asset> findByIdInAndDeletedFalse(List<Long> ids);
 
     // 仪表盘相关查询
-    // 按状态统计资产数量
-    @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.status = :status")
-    long countByStatusAndDeletedFalse(@Param("status") String status);
-
     // 按重要性统计资产数量（字符串参数）
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.importance = :importance")
     long countByImportanceStringAndDeletedFalse(@Param("importance") String importance);
+
+    // 检查资产是否存在且未删除
+    boolean existsByIdAndDeletedFalse(Long id);
+
+    // 根据名称模糊查询未删除的资产
+    List<Asset> findByNameContainingAndDeletedFalse(String name);
 }

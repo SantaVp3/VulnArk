@@ -169,6 +169,88 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知表';
 
+-- 资产依赖关系表
+CREATE TABLE IF NOT EXISTS asset_dependencies (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    source_asset_id BIGINT NOT NULL COMMENT '源资产ID（依赖方）',
+    target_asset_id BIGINT NOT NULL COMMENT '目标资产ID（被依赖方）',
+    dependency_type ENUM('NETWORK', 'DATABASE', 'SERVICE', 'APPLICATION', 'INFRASTRUCTURE', 'DATA_FLOW', 'AUTHENTICATION', 'STORAGE', 'MONITORING', 'BACKUP', 'OTHER') NOT NULL COMMENT '依赖类型',
+    dependency_strength ENUM('WEAK', 'MEDIUM', 'STRONG', 'CRITICAL') NOT NULL COMMENT '依赖强度',
+    description VARCHAR(500) COMMENT '依赖描述',
+    port INT COMMENT '端口信息',
+    protocol VARCHAR(50) COMMENT '协议信息',
+    service_name VARCHAR(100) COMMENT '服务名称',
+    is_critical TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否为关键依赖',
+    status ENUM('ACTIVE', 'INACTIVE', 'BROKEN', 'DEPRECATED') NOT NULL DEFAULT 'ACTIVE' COMMENT '依赖状态',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by BIGINT COMMENT '创建者ID',
+    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    FOREIGN KEY (source_asset_id) REFERENCES assets(id),
+    FOREIGN KEY (target_asset_id) REFERENCES assets(id),
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    UNIQUE KEY uk_asset_dependency (source_asset_id, target_asset_id, deleted),
+    INDEX idx_asset_dependencies_source (source_asset_id),
+    INDEX idx_asset_dependencies_target (target_asset_id),
+    INDEX idx_asset_dependencies_type (dependency_type),
+    INDEX idx_asset_dependencies_strength (dependency_strength),
+    INDEX idx_asset_dependencies_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产依赖关系表';
+
+-- 资产发现任务表
+CREATE TABLE IF NOT EXISTS asset_discovery_tasks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL COMMENT '任务名称',
+    description TEXT COMMENT '任务描述',
+    target_type ENUM('IP_RANGE', 'SUBNET', 'DOMAIN', 'URL_LIST', 'CUSTOM') NOT NULL COMMENT '目标类型',
+    targets TEXT NOT NULL COMMENT '扫描目标（JSON格式）',
+    scan_type ENUM('PING_SWEEP', 'PORT_SCAN', 'SERVICE_DETECTION', 'FULL_SCAN') NOT NULL COMMENT '扫描类型',
+    scan_ports VARCHAR(1000) COMMENT '扫描端口范围',
+    scan_options JSON COMMENT '扫描选项配置',
+    schedule_type ENUM('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM') NOT NULL DEFAULT 'ONCE' COMMENT '调度类型',
+    schedule_config JSON COMMENT '调度配置',
+    status ENUM('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL DEFAULT 'PENDING' COMMENT '任务状态',
+    progress DECIMAL(5,2) DEFAULT 0.00 COMMENT '执行进度',
+    last_run_time DATETIME COMMENT '最后执行时间',
+    next_run_time DATETIME COMMENT '下次执行时间',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by BIGINT NOT NULL COMMENT '创建者ID',
+    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    INDEX idx_discovery_tasks_status (status),
+    INDEX idx_discovery_tasks_schedule (schedule_type, next_run_time),
+    INDEX idx_discovery_tasks_created_by (created_by)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产发现任务表';
+
+-- 资产发现结果表
+CREATE TABLE IF NOT EXISTS asset_discovery_results (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    task_id BIGINT NOT NULL COMMENT '发现任务ID',
+    target VARCHAR(500) NOT NULL COMMENT '扫描目标',
+    ip_address VARCHAR(45) NOT NULL COMMENT 'IP地址',
+    hostname VARCHAR(255) COMMENT '主机名',
+    mac_address VARCHAR(17) COMMENT 'MAC地址',
+    is_alive TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否在线',
+    response_time INT COMMENT '响应时间(ms)',
+    open_ports JSON COMMENT '开放端口列表',
+    services JSON COMMENT '检测到的服务',
+    operating_system VARCHAR(200) COMMENT '操作系统',
+    device_type VARCHAR(100) COMMENT '设备类型',
+    vendor VARCHAR(100) COMMENT '厂商信息',
+    confidence_score DECIMAL(3,2) DEFAULT 0.00 COMMENT '识别置信度',
+    raw_data JSON COMMENT '原始扫描数据',
+    asset_id BIGINT COMMENT '关联的资产ID',
+    correlation_status ENUM('NEW', 'MATCHED', 'UPDATED', 'IGNORED') NOT NULL DEFAULT 'NEW' COMMENT '关联状态',
+    discovered_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发现时间',
+    FOREIGN KEY (task_id) REFERENCES asset_discovery_tasks(id),
+    FOREIGN KEY (asset_id) REFERENCES assets(id),
+    INDEX idx_discovery_results_task (task_id),
+    INDEX idx_discovery_results_ip (ip_address),
+    INDEX idx_discovery_results_status (correlation_status),
+    INDEX idx_discovery_results_time (discovered_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产发现结果表';
+
 -- 创建索引
 CREATE INDEX idx_vulnerabilities_project_id ON vulnerabilities(project_id);
 CREATE INDEX idx_vulnerabilities_status ON vulnerabilities(status);

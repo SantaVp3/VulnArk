@@ -113,10 +113,10 @@ const handleSubmit = async (data: any) => {
     await new Promise(resolve => setTimeout(resolve, 100))
 
     try {
-      await router.push('/dashboard')
+      await router.push('/')
     } catch (navError) {
       console.error('Router navigation failed:', navError)
-      window.location.href = '/dashboard'
+      window.location.href = '/'
     }
   } catch (error: any) {
     console.error('Login error:', error)

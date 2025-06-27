@@ -28,10 +28,6 @@ const router = createRouter({
     },
     {
       path: '/',
-      redirect: '/dashboard'
-    },
-    {
-      path: '/dashboard',
       name: 'layout',
       component: () => import('../views/LayoutView.vue'),
       meta: { requiresAuth: true },
@@ -49,17 +45,38 @@ const router = createRouter({
         {
           path: 'projects',
           name: 'Projects',
-          component: () => import('../views/ProjectView.vue')
+          component: () => import('../views/ProjectView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
         },
         {
           path: 'assets',
           name: 'Assets',
-          component: () => import('../views/AssetView.vue')
+          component: () => import('../views/AssetView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
+        },
+        {
+          path: 'asset-dependencies',
+          name: 'AssetDependencies',
+          component: () => import('../views/AssetDependencyView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
+        },
+        {
+          path: 'asset-discovery',
+          name: 'AssetDiscovery',
+          component: () => import('../views/AssetDiscoveryView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
         },
         {
           path: 'scan',
           name: 'Scan',
-          component: () => import('../views/ScanView.vue')
+          component: () => import('../views/ScanView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
+        },
+        {
+          path: 'baseline',
+          name: 'BaselineCheck',
+          component: () => import('../views/BaselineCheckView.vue'),
+          meta: { requiresRoles: ['ADMIN', 'ANALYST'] }
         },
         {
           path: 'users',
@@ -90,8 +107,10 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // 调试信息（开发环境）
-  if (process.env.NODE_ENV === 'development') {
+  // 调试信息（仅在开发环境且有认证问题时显示）
+  if (process.env.NODE_ENV === 'development' &&
+      ((to.meta.requiresAuth && !authStore.isLoggedIn) ||
+       (to.meta.requiresAdmin && !authStore.isAdmin))) {
     console.log('Route guard check:', {
       to: to.path,
       requiresAuth: to.meta.requiresAuth,
@@ -106,10 +125,19 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     next('/login')
   } else if (to.meta.requiresGuest && authStore.isLoggedIn) {
-    next('/dashboard')
+    next('/')
   } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
     console.warn('Access denied: Admin role required')
-    next('/dashboard')
+    next('/')
+  } else if (to.meta.requiresRoles && Array.isArray(to.meta.requiresRoles)) {
+    // 检查角色权限
+    const userRole = authStore.user?.role
+    if (!userRole || !to.meta.requiresRoles.includes(userRole)) {
+      console.warn('Access denied: Required roles:', to.meta.requiresRoles, 'User role:', userRole)
+      next('/')
+      return
+    }
+    next()
   } else {
     next()
   }

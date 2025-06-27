@@ -18,50 +18,103 @@
       
       <a-menu
         :default-selected-keys="[currentRoute]"
+        :default-open-keys="defaultOpenKeys"
         :style="{ width: '100%', border: 'none' }"
         theme="dark"
         mode="vertical"
         class="sidebar-menu-enhanced"
       >
-        <a-menu-item key="dashboard" @click="$router.push('/dashboard')">
+        <!-- 仪表板 -->
+        <a-menu-item key="dashboard" @click="$router.push('/')">
           <template #icon>
             <icon-dashboard />
           </template>
           仪表板
         </a-menu-item>
-        
-        <a-menu-item key="vulnerabilities" @click="$router.push('/dashboard/vulnerabilities')">
-          <template #icon>
-            <icon-bug />
-          </template>
-          漏洞管理
-        </a-menu-item>
-        
-        <a-menu-item key="projects" @click="$router.push('/dashboard/projects')">
+
+        <!-- 项目管理 -->
+        <a-menu-item
+          v-if="canAccessManagement"
+          key="projects"
+          @click="$router.push('/projects')"
+        >
           <template #icon>
             <icon-folder />
           </template>
           项目管理
         </a-menu-item>
 
-        <a-menu-item key="assets" @click="$router.push('/dashboard/assets')">
+        <!-- 漏洞管理分组 -->
+        <a-sub-menu key="vulnerability-group">
+          <template #icon>
+            <icon-safe />
+          </template>
+          <template #title>漏洞管理</template>
+
+          <a-menu-item key="vulnerabilities" @click="$router.push('/vulnerabilities')">
+            <template #icon>
+              <icon-bug />
+            </template>
+            漏洞管理
+          </a-menu-item>
+
+          <a-menu-item
+            v-if="canAccessManagement"
+            key="scan"
+            @click="$router.push('/scan')"
+          >
+            <template #icon>
+              <icon-search />
+            </template>
+            漏洞扫描
+          </a-menu-item>
+
+          <a-menu-item
+            v-if="canAccessManagement"
+            key="baseline"
+            @click="$router.push('/baseline')"
+          >
+            <template #icon>
+              <icon-safe />
+            </template>
+            基线检查
+          </a-menu-item>
+        </a-sub-menu>
+
+        <!-- 资产管理分组 -->
+        <a-sub-menu v-if="canAccessManagement" key="asset-group">
           <template #icon>
             <icon-desktop />
           </template>
-          资产管理
-        </a-menu-item>
+          <template #title>资产管理</template>
 
-        <a-menu-item key="scan" @click="$router.push('/dashboard/scan')">
-          <template #icon>
-            <icon-search />
-          </template>
-          漏洞扫描
-        </a-menu-item>
+          <a-menu-item key="assets" @click="$router.push('/assets')">
+            <template #icon>
+              <icon-desktop />
+            </template>
+            资产管理
+          </a-menu-item>
 
+          <a-menu-item key="asset-dependencies" @click="navigateTo('/asset-dependencies')">
+            <template #icon>
+              <icon-relation />
+            </template>
+            资产依赖关系
+          </a-menu-item>
+
+          <a-menu-item key="asset-discovery" @click="navigateTo('/asset-discovery')">
+            <template #icon>
+              <icon-scan />
+            </template>
+            资产发现
+          </a-menu-item>
+        </a-sub-menu>
+
+        <!-- 用户管理 -->
         <a-menu-item
-          v-if="authStore.isAdmin"
+          v-if="isAdmin"
           key="users"
-          @click="$router.push('/dashboard/users')"
+          @click="$router.push('/users')"
         >
           <template #icon>
             <icon-user />
@@ -135,7 +188,9 @@ import {
   IconSettings,
   IconPoweroff,
   IconSearch,
-  IconSafe
+  IconSafe,
+  IconRelation,
+  IconScan
 } from '@arco-design/web-vue/es/icon'
 import { useAuthStore } from '@/stores/auth'
 
@@ -146,12 +201,39 @@ const authStore = useAuthStore()
 const collapsed = ref(false)
 const isDev = import.meta.env.DEV
 
+// 角色权限检查
+const isViewer = computed(() => authStore.user?.role === 'VIEWER')
+const isAnalyst = computed(() => authStore.user?.role === 'ANALYST')
+const isAdmin = computed(() => authStore.user?.role === 'ADMIN')
+const canAccessManagement = computed(() => isAdmin.value || isAnalyst.value)
+
+// 默认展开的子菜单
+const defaultOpenKeys = computed(() => {
+  const path = route.path
+  const openKeys = []
+
+  // 如果当前路径属于漏洞管理分组，展开漏洞管理子菜单
+  if (path.includes('/vulnerabilities') || path.includes('/scan') || path.includes('/baseline')) {
+    openKeys.push('vulnerability-group')
+  }
+
+  // 如果当前路径属于资产管理分组，展开资产管理子菜单
+  if (path.includes('/assets') || path.includes('/asset-dependencies') || path.includes('/asset-discovery')) {
+    openKeys.push('asset-group')
+  }
+
+  return openKeys
+})
+
 const currentRoute = computed(() => {
   const path = route.path
   if (path.includes('/vulnerabilities')) return 'vulnerabilities'
   if (path.includes('/projects')) return 'projects'
+  if (path.includes('/asset-dependencies')) return 'asset-dependencies'
+  if (path.includes('/asset-discovery')) return 'asset-discovery'
   if (path.includes('/assets')) return 'assets'
   if (path.includes('/scan')) return 'scan'
+  if (path.includes('/baseline')) return 'baseline'
   if (path.includes('/users')) return 'users'
   return 'dashboard'
 })
@@ -162,7 +244,10 @@ const breadcrumbTitle = computed(() => {
     vulnerabilities: '漏洞管理',
     projects: '项目管理',
     assets: '资产管理',
+    'asset-dependencies': '资产依赖关系',
+    'asset-discovery': '资产发现',
     scan: '漏洞扫描',
+    baseline: '基线检查',
     users: '用户管理'
   }
   return routeMap[currentRoute.value] || '首页'
@@ -178,6 +263,10 @@ const onBreakpoint = (broken: boolean) => {
   } else {
     collapsed.value = false
   }
+}
+
+const navigateTo = (path: string) => {
+  router.push(path)
 }
 
 const handleLogout = async () => {
@@ -318,6 +407,77 @@ if (isDev) {
 
 :deep(.arco-menu-item:hover .arco-menu-icon) {
   transform: scale(1.1) !important;
+}
+
+/* 子菜单样式增强 */
+:deep(.arco-menu-sub) {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: var(--radius-md) !important;
+  margin: 4px 8px !important;
+  overflow: hidden !important;
+}
+
+:deep(.arco-menu-sub-header) {
+  height: 52px !important;
+  line-height: 52px !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-fast) !important;
+  margin-bottom: 4px !important;
+}
+
+:deep(.arco-menu-sub-header:hover) {
+  background: rgba(59, 130, 246, 0.1) !important;
+  transform: translateX(4px) !important;
+}
+
+:deep(.arco-menu-sub-header-selected) {
+  background: var(--primary-gradient) !important;
+  color: var(--text-white) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+:deep(.arco-menu-sub-content) {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+:deep(.arco-menu-sub .arco-menu-item) {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 2px 12px !important;
+  padding-left: 16px !important;
+  border-radius: var(--radius-sm) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:deep(.arco-menu-sub .arco-menu-item:hover) {
+  background: rgba(59, 130, 246, 0.15) !important;
+  transform: translateX(8px) !important;
+}
+
+:deep(.arco-menu-sub .arco-menu-item-selected) {
+  background: rgba(59, 130, 246, 0.3) !important;
+  color: var(--text-white) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+}
+
+:deep(.arco-menu-sub .arco-menu-item .arco-menu-icon) {
+  font-size: 16px !important;
+  margin-right: 10px !important;
+}
+
+/* 子菜单展开/收起动画 */
+:deep(.arco-menu-sub-content) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 子菜单标题图标旋转动画 */
+:deep(.arco-menu-sub-header .arco-menu-sub-icon) {
+  transition: transform 0.3s ease !important;
+}
+
+:deep(.arco-menu-sub-open .arco-menu-sub-header .arco-menu-sub-icon) {
+  transform: rotate(90deg) !important;
 }
 
 .header {

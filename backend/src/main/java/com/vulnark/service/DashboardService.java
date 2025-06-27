@@ -1,5 +1,6 @@
 package com.vulnark.service;
 
+import com.vulnark.entity.Asset;
 import com.vulnark.entity.Vulnerability;
 import com.vulnark.repository.VulnerabilityRepository;
 import com.vulnark.repository.ProjectRepository;
@@ -76,9 +77,9 @@ public class DashboardService {
             // 资产统计
             AssetDashboardStats assetStats = new AssetDashboardStats();
             assetStats.setTotal(assetRepository.countByDeletedFalse());
-            assetStats.setOnline(assetRepository.countByStatusAndDeletedFalse("ONLINE"));
-            assetStats.setOffline(assetRepository.countByStatusAndDeletedFalse("OFFLINE"));
-            assetStats.setMaintenance(assetRepository.countByStatusAndDeletedFalse("MAINTENANCE"));
+            assetStats.setOnline(assetRepository.countByStatusAndDeletedFalse(Asset.Status.ACTIVE));
+            assetStats.setOffline(assetRepository.countByStatusAndDeletedFalse(Asset.Status.INACTIVE));
+            assetStats.setMaintenance(assetRepository.countByStatusAndDeletedFalse(Asset.Status.MAINTENANCE));
             assetStats.setHigh(assetRepository.countByImportanceStringAndDeletedFalse("HIGH"));
             assetStats.setCritical(assetRepository.countByImportanceStringAndDeletedFalse("CRITICAL"));
             stats.setAssets(assetStats);
@@ -184,20 +185,40 @@ public class DashboardService {
     public List<AssetStatusDistribution> getAssetStatusDistribution() {
         List<AssetStatusDistribution> distribution = new ArrayList<>();
         long total = assetRepository.countByDeletedFalse();
-        
-        String[] statuses = {"ONLINE", "OFFLINE", "MAINTENANCE"};
-        for (String status : statuses) {
+
+        // 使用正确的Asset.Status枚举值
+        Asset.Status[] statuses = {Asset.Status.ACTIVE, Asset.Status.INACTIVE, Asset.Status.MAINTENANCE, Asset.Status.DECOMMISSIONED};
+        for (Asset.Status status : statuses) {
             long count = assetRepository.countByStatusAndDeletedFalse(status);
             if (count > 0) {
                 AssetStatusDistribution item = new AssetStatusDistribution();
-                item.setStatus(status.toLowerCase());
+                // 将枚举值转换为前端友好的显示名称
+                item.setStatus(mapStatusToDisplayName(status));
                 item.setCount(count);
                 item.setPercentage(total > 0 ? (double) count / total * 100 : 0);
                 distribution.add(item);
             }
         }
-        
+
         return distribution;
+    }
+
+    /**
+     * 将Asset.Status枚举映射为前端友好的显示名称
+     */
+    private String mapStatusToDisplayName(Asset.Status status) {
+        switch (status) {
+            case ACTIVE:
+                return "active";
+            case INACTIVE:
+                return "inactive";
+            case MAINTENANCE:
+                return "maintenance";
+            case DECOMMISSIONED:
+                return "decommissioned";
+            default:
+                return status.name().toLowerCase();
+        }
     }
 
     /**

@@ -922,7 +922,15 @@ const handleCreateUser = async () => {
       return
     }
 
-    await userApi.create(createForm)
+    // 清理空字符串字段，转换为null
+    const cleanedForm = { ...createForm }
+    Object.keys(cleanedForm).forEach(key => {
+      if (cleanedForm[key] === '') {
+        cleanedForm[key] = null
+      }
+    })
+
+    await userApi.create(cleanedForm)
     Message.success('用户创建成功')
     createModalVisible.value = false
     loadUsers()

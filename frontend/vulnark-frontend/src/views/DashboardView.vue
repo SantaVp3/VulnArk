@@ -202,7 +202,7 @@
         <a-card title="快速操作" class="quick-actions-card">
           <a-row :gutter="[16, 16]">
             <a-col :span="12">
-              <a-button type="primary" block @click="navigateTo('/dashboard/vulnerabilities')">
+              <a-button type="primary" block @click="navigateTo('/vulnerabilities')">
                 <template #icon>
                   <icon-plus />
                 </template>
@@ -210,7 +210,7 @@
               </a-button>
             </a-col>
             <a-col :span="12">
-              <a-button type="outline" block @click="navigateTo('/dashboard/projects')">
+              <a-button type="outline" block @click="navigateTo('/projects')">
                 <template #icon>
                   <icon-plus />
                 </template>
@@ -218,7 +218,7 @@
               </a-button>
             </a-col>
             <a-col :span="12">
-              <a-button type="outline" block @click="navigateTo('/dashboard/assets')">
+              <a-button type="outline" block @click="navigateTo('/assets')">
                 <template #icon>
                   <icon-plus />
                 </template>
@@ -226,7 +226,7 @@
               </a-button>
             </a-col>
             <a-col :span="12">
-              <a-button type="outline" block @click="navigateTo('/dashboard/scan')">
+              <a-button type="outline" block @click="navigateTo('/scan')">
                 <template #icon>
                   <icon-play-arrow />
                 </template>
@@ -432,6 +432,9 @@ const loadAssetStatusData = async () => {
     initAssetStatusChart()
   } catch (error) {
     console.error('加载资产状态数据失败:', error)
+    // 设置默认数据以防止图表初始化失败
+    assetStatusData.value = []
+    Message.error('加载资产状态数据失败，请稍后重试')
   }
 }
 
@@ -620,9 +623,10 @@ const initAssetStatusChart = () => {
   assetStatusChart = echarts.init(assetStatusChartRef.value)
 
   const statusColors = {
-    'online': '#52c41a',
-    'offline': '#f5222d',
-    'maintenance': '#fa8c16'
+    'active': '#52c41a',
+    'inactive': '#f5222d',
+    'maintenance': '#fa8c16',
+    'decommissioned': '#722ed1'
   }
 
   const option = {
@@ -670,9 +674,10 @@ const getSeverityLabel = (severity: string) => {
 
 const getAssetStatusLabel = (status: string) => {
   const labels = {
-    'online': '在线',
-    'offline': '离线',
-    'maintenance': '维护中'
+    'active': '活跃',
+    'inactive': '非活跃',
+    'maintenance': '维护中',
+    'decommissioned': '已停用'
   }
   return labels[status as keyof typeof labels] || status
 }
