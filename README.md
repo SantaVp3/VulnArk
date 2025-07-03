@@ -85,6 +85,12 @@ npm install
 npm run dev
 ```
 
+## 项目截图
+<img width="779" alt="iShot_2025-07-03_15 25 01" src="https://github.com/user-attachments/assets/f1a0d26e-ef5c-40fb-9214-1d27798e7e0b" />
+<img width="1473" alt="iShot_2025-07-03_15 25 38" src="https://github.com/user-attachments/assets/e21add73-679d-42f0-93b1-d193c695e899" />
+<img width="1474" alt="iShot_2025-07-03_15 25 32" src="https://github.com/user-attachments/assets/bd3a862b-a523-4a5a-9432-bcf435027e3b" />
+<img width="1467" alt="iShot_2025-07-03_15 25 25" src="https://github.com/user-attachments/assets/039099ca-ca75-41e7-9717-a765187186d1" />
+
 ## 项目结构
 
 ```
