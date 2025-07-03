@@ -8,9 +8,9 @@ spring:
     name: vulnark-backend
 
   datasource:
-    url: jdbc:mysql://rm-bp12rmv4rgp0p70k2lo.mysql.rds.aliyuncs.com:3306/vulnark?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: vulnarka
-    password: mPNHCt3f@yi44
+    url: jdbc:mysql://localhost:3306/vulnark
+    username: your_username
+    password: your_password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

@@ -24,8 +24,8 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     // 根据ID查找未删除的资产
     Optional<Asset> findByIdAndDeletedFalse(Long id);
     
-    // 根据项目ID查找资产
-    List<Asset> findByProjectIdAndDeletedFalse(Long projectId);
+    // 注释掉已删除的项目相关方法
+    // List<Asset> findByProjectIdAndDeletedFalse(Long projectId);
     
     // 根据负责人ID查找资产
     List<Asset> findByOwnerIdAndDeletedFalse(Long ownerId);
@@ -51,7 +51,6 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
            "AND (:type IS NULL OR a.type = :type) " +
            "AND (:status IS NULL OR a.status = :status) " +
            "AND (:importance IS NULL OR a.importance = :importance) " +
-           "AND (:projectId IS NULL OR a.projectId = :projectId) " +
            "AND (:ownerId IS NULL OR a.ownerId = :ownerId) " +
            "AND (:ipAddress IS NULL OR a.ipAddress LIKE %:ipAddress%) " +
            "AND (:domain IS NULL OR a.domain LIKE %:domain%)")
@@ -60,7 +59,6 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
             @Param("type") Asset.AssetType type,
             @Param("status") Asset.Status status,
             @Param("importance") Asset.Importance importance,
-            @Param("projectId") Long projectId,
             @Param("ownerId") Long ownerId,
             @Param("ipAddress") String ipAddress,
             @Param("domain") String domain,
@@ -79,8 +77,9 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.importance = :importance")
     long countByImportanceAndDeletedFalse(@Param("importance") Asset.Importance importance);
     
+    // 项目相关的统计查询
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.projectId = :projectId")
-    long countByProjectIdAndDeletedFalse(@Param("projectId") Long projectId);
+    long countByProjectId(@Param("projectId") Long projectId);
     
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.ownerId = :ownerId")
     long countByOwnerIdAndDeletedFalse(@Param("ownerId") Long ownerId);

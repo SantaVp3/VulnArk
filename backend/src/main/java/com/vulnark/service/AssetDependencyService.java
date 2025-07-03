@@ -155,11 +155,11 @@ public class AssetDependencyService {
     }
     
     /**
-     * 获取项目的资产依赖拓扑图
+     * 获取项目的资产依赖拓扑图 - 项目功能已删除
      */
     public AssetDependencyTopology getProjectDependencyTopology(Long projectId) {
-        // 获取项目的所有资产
-        List<Asset> assets = assetRepository.findByProjectIdAndDeletedFalse(projectId);
+        // 项目功能已删除，返回所有资产
+        List<Asset> assets = assetRepository.findByDeletedFalse();
         
         // 获取项目的所有依赖关系
         List<AssetDependency> dependencies = dependencyRepository.findByProjectId(projectId);

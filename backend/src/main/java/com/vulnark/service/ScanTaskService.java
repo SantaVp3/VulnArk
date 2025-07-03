@@ -76,12 +76,12 @@ public class ScanTaskService {
         scanTask.setCreatedBy(currentUser);
         scanTask.setScheduledStartTime(request.getScheduledStartTime());
         
-        // 设置项目
-        if (request.getProjectId() != null) {
-            Project project = new Project();
-            project.setId(request.getProjectId());
-            scanTask.setProject(project);
-        }
+        // 设置项目 - 已删除项目功能
+        // if (request.getProjectId() != null) {
+        //     Project project = new Project();
+        //     project.setId(request.getProjectId());
+        //     scanTask.setProject(project);
+        // }
         
         // 设置扫描配置
         if (request.getScanConfigId() != null) {
@@ -395,10 +395,11 @@ public class ScanTaskService {
             assets = assetRepository.findByIdInAndDeletedFalse(request.getAssetIds());
         }
         
-        if (request.getProjectId() != null && request.isIncludeProjectAssets()) {
-            List<Asset> projectAssets = assetRepository.findByProjectIdAndDeletedFalse(request.getProjectId());
-            assets.addAll(projectAssets);
-        }
+        // 项目功能已删除，忽略项目资产
+        // if (request.getProjectId() != null && request.isIncludeProjectAssets()) {
+        //     List<Asset> projectAssets = assetRepository.findByProjectIdAndDeletedFalse(request.getProjectId());
+        //     assets.addAll(projectAssets);
+        // }
         
         // 去重
         return assets.stream().distinct().collect(Collectors.toList());
@@ -470,7 +471,7 @@ public class ScanTaskService {
             // 保存漏洞到数据库
             if (result.getVulnerabilities() != null) {
                 for (Vulnerability vulnerability : result.getVulnerabilities()) {
-                    vulnerability.setProjectId(task.getProject() != null ? task.getProject().getId() : null);
+                    // vulnerability.setProjectId(task.getProject() != null ? task.getProject().getId() : null); // 已删除项目功能
                     vulnerability.setScanTaskId(task.getId());
                     vulnerabilityRepository.save(vulnerability);
                 }

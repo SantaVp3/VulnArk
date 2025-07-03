@@ -1,9 +1,10 @@
 package com.vulnark.service;
 
 import com.vulnark.entity.Asset;
+import com.vulnark.entity.User;
 import com.vulnark.entity.Vulnerability;
 import com.vulnark.repository.VulnerabilityRepository;
-import com.vulnark.repository.ProjectRepository;
+// import com.vulnark.repository.ProjectRepository; // 已删除项目功能
 import com.vulnark.repository.AssetRepository;
 import com.vulnark.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,8 @@ public class DashboardService {
     @Autowired
     private VulnerabilityRepository vulnerabilityRepository;
     
-    @Autowired
-    private ProjectRepository projectRepository;
+    // @Autowired
+    // private ProjectRepository projectRepository; // 已删除项目功能
     
     @Autowired
     private AssetRepository assetRepository;
@@ -58,20 +59,14 @@ public class DashboardService {
             stats.setVulnerabilities(vulnStats);
         }
 
-        try {
-            // 项目统计
-            ProjectDashboardStats projectStats = new ProjectDashboardStats();
-            projectStats.setTotal(projectRepository.countByDeletedFalse());
-            projectStats.setActive(projectRepository.countByStatusStringAndDeletedFalse("ACTIVE"));
-            projectStats.setCompleted(projectRepository.countByStatusStringAndDeletedFalse("COMPLETED"));
-            projectStats.setArchived(projectRepository.countByStatusStringAndDeletedFalse("ARCHIVED"));
-            projectStats.setOverdue(projectRepository.countOverdueProjects());
-            stats.setProjects(projectStats);
-        } catch (Exception e) {
-            // 如果项目统计失败，设置默认值
-            ProjectDashboardStats projectStats = new ProjectDashboardStats();
-            stats.setProjects(projectStats);
-        }
+        // 项目统计 - 已删除项目功能，设置默认值
+        ProjectDashboardStats projectStats = new ProjectDashboardStats();
+        projectStats.setTotal(0);
+        projectStats.setActive(0);
+        projectStats.setCompleted(0);
+        projectStats.setArchived(0);
+        projectStats.setOverdue(0);
+        stats.setProjects(projectStats);
 
         try {
             // 资产统计
@@ -80,8 +75,8 @@ public class DashboardService {
             assetStats.setOnline(assetRepository.countByStatusAndDeletedFalse(Asset.Status.ACTIVE));
             assetStats.setOffline(assetRepository.countByStatusAndDeletedFalse(Asset.Status.INACTIVE));
             assetStats.setMaintenance(assetRepository.countByStatusAndDeletedFalse(Asset.Status.MAINTENANCE));
-            assetStats.setHigh(assetRepository.countByImportanceStringAndDeletedFalse("HIGH"));
-            assetStats.setCritical(assetRepository.countByImportanceStringAndDeletedFalse("CRITICAL"));
+            assetStats.setHigh(assetRepository.countByImportanceAndDeletedFalse(Asset.Importance.HIGH));
+            assetStats.setCritical(assetRepository.countByImportanceAndDeletedFalse(Asset.Importance.CRITICAL));
             stats.setAssets(assetStats);
         } catch (Exception e) {
             // 如果资产统计失败，设置默认值
@@ -93,11 +88,12 @@ public class DashboardService {
             // 用户统计
             UserDashboardStats userStats = new UserDashboardStats();
             userStats.setTotal(userRepository.countByDeletedFalse());
-            userStats.setActive(userRepository.countByEnabledTrueAndDeletedFalse());
-            userStats.setInactive(userRepository.countByEnabledFalseAndDeletedFalse());
-            userStats.setAdmin(userRepository.countByRoleStringAndDeletedFalse("ADMIN"));
-            userStats.setAnalyst(userRepository.countByRoleStringAndDeletedFalse("ANALYST"));
-            userStats.setViewer(userRepository.countByRoleStringAndDeletedFalse("VIEWER"));
+            userStats.setActive(userRepository.countByStatusAndDeletedFalse(User.Status.ACTIVE));
+            userStats.setInactive(userRepository.countByStatusAndDeletedFalse(User.Status.INACTIVE) + 
+                                   userRepository.countByStatusAndDeletedFalse(User.Status.LOCKED));
+            userStats.setAdmin(userRepository.countByRoleAndDeletedFalse(User.Role.ADMIN));
+            userStats.setAnalyst(userRepository.countByRoleAndDeletedFalse(User.Role.ANALYST));
+            userStats.setViewer(userRepository.countByRoleAndDeletedFalse(User.Role.VIEWER));
             stats.setUsers(userStats);
         } catch (Exception e) {
             // 如果用户统计失败，设置默认值

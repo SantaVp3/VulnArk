@@ -25,7 +25,8 @@ public class AssetRequest {
     private Asset.Status status;
     
     @Schema(description = "IP地址")
-    @Pattern(regexp = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^$", 
+    @NotBlank(message = "IP地址不能为空")
+    @Pattern(regexp = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", 
              message = "IP地址格式不正确")
     private String ipAddress;
     
@@ -58,7 +59,6 @@ public class AssetRequest {
     private Asset.Importance importance;
     
     @Schema(description = "所属项目ID")
-    @NotNull(message = "所属项目ID不能为空")
     private Long projectId;
     
     @Schema(description = "负责人ID")
@@ -249,5 +249,17 @@ public class AssetRequest {
     
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    @Override
+    public String toString() {
+        return "AssetRequest{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", status=" + status +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", domain='" + domain + '\'' +
+                ", ownerId=" + ownerId +
+                '}';
     }
 }

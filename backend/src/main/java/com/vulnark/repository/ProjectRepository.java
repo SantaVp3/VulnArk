@@ -1,6 +1,7 @@
 package com.vulnark.repository;
 
 import com.vulnark.entity.Project;
+import com.vulnark.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,116 +9,116 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     
-    // 查找未删除的项目
-    List<Project> findByDeletedFalse();
+    /**
+     * 根据项目名称查找项目
+     */
+    List<Project> findByNameContainingIgnoreCase(String name);
     
-    // 分页查找未删除的项目
-    Page<Project> findByDeletedFalse(Pageable pageable);
+    /**
+     * 根据状态查找项目
+     */
+    List<Project> findByStatus(Project.Status status);
     
-    // 根据ID查找未删除的项目
-    Optional<Project> findByIdAndDeletedFalse(Long id);
+    /**
+     * 根据优先级查找项目
+     */
+    List<Project> findByPriority(Project.Priority priority);
     
-    // 根据负责人ID查找项目
-    List<Project> findByOwnerIdAndDeletedFalse(Long ownerId);
+    /**
+     * 根据负责人查找项目
+     */
+    List<Project> findByOwner(User owner);
     
-    // 根据状态查找项目
-    List<Project> findByStatusAndDeletedFalse(Project.Status status);
+    /**
+     * 根据负责人ID查找项目
+     */
+    List<Project> findByOwnerId(Long ownerId);
     
-    // 根据优先级查找项目
-    List<Project> findByPriorityAndDeletedFalse(Project.Priority priority);
+    /**
+     * 根据部门查找项目
+     */
+    List<Project> findByDepartmentContainingIgnoreCase(String department);
     
-    // 根据项目类型查找项目
-    List<Project> findByTypeAndDeletedFalse(String type);
+    /**
+     * 查找用户参与的项目
+     */
+    @Query("SELECT p FROM Project p JOIN p.members m WHERE m.id = :userId")
+    List<Project> findByMemberId(@Param("userId") Long userId);
     
-    // 复合查询：根据多个条件查找项目
-    @Query("SELECT p FROM Project p WHERE p.deleted = false " +
-           "AND (:name IS NULL OR p.name LIKE %:name%) " +
-           "AND (:status IS NULL OR p.status = :status) " +
-           "AND (:priority IS NULL OR p.priority = :priority) " +
-           "AND (:type IS NULL OR p.type LIKE %:type%) " +
-           "AND (:ownerId IS NULL OR p.ownerId = :ownerId) " +
-           "AND (:startDate IS NULL OR p.startDate >= :startDate) " +
-           "AND (:endDate IS NULL OR p.endDate <= :endDate)")
-    Page<Project> findByConditions(
+    /**
+     * 复杂查询方法
+     */
+    @Query("SELECT p FROM Project p WHERE " +
+           "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+           "(:status IS NULL OR p.status = :status) AND " +
+           "(:priority IS NULL OR p.priority = :priority) AND " +
+           "(:ownerId IS NULL OR p.owner.id = :ownerId) AND " +
+           "(:department IS NULL OR LOWER(p.department) LIKE LOWER(CONCAT('%', :department, '%'))) AND " +
+           "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Project> findProjectsWithFilters(
             @Param("name") String name,
             @Param("status") Project.Status status,
             @Param("priority") Project.Priority priority,
-            @Param("type") String type,
             @Param("ownerId") Long ownerId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("department") String department,
+            @Param("keyword") String keyword,
             Pageable pageable);
     
-    // 统计查询
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false")
-    long countByDeletedFalse();
+    /**
+     * 统计不同状态的项目数量
+     */
+    @Query("SELECT p.status, COUNT(p) FROM Project p GROUP BY p.status")
+    List<Object[]> countByStatus();
     
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false AND p.status = :status")
-    long countByStatusAndDeletedFalse(@Param("status") Project.Status status);
+    /**
+     * 统计不同优先级的项目数量
+     */
+    @Query("SELECT p.priority, COUNT(p) FROM Project p GROUP BY p.priority")
+    List<Object[]> countByPriority();
     
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false AND p.priority = :priority")
-    long countByPriorityAndDeletedFalse(@Param("priority") Project.Priority priority);
+    /**
+     * 根据时间范围查找项目
+     */
+    List<Project> findByCreatedTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
     
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false AND p.ownerId = :ownerId")
-    long countByOwnerIdAndDeletedFalse(@Param("ownerId") Long ownerId);
+    /**
+     * 查找即将到期的项目
+     */
+    @Query("SELECT p FROM Project p WHERE p.endDate IS NOT NULL AND p.endDate <= :date AND p.status NOT IN ('COMPLETED', 'CANCELLED')")
+    List<Project> findProjectsEndingBefore(@Param("date") LocalDateTime date);
     
-    // 获取最近的项目
-    @Query("SELECT p FROM Project p WHERE p.deleted = false ORDER BY p.createdTime DESC")
-    List<Project> findRecentProjects(Pageable pageable);
+    /**
+     * 查找最近创建的项目
+     */
+    List<Project> findTop10ByOrderByCreatedTimeDesc();
     
-    // 获取即将到期的项目
-    @Query("SELECT p FROM Project p WHERE p.deleted = false " +
-           "AND p.endDate IS NOT NULL " +
-           "AND p.endDate <= :date " +
-           "AND p.status NOT IN ('COMPLETED', 'ARCHIVED')")
-    List<Project> findOverdueProjects(@Param("date") LocalDate date);
+    /**
+     * 查找活跃的项目
+     */
+    List<Project> findByStatusIn(List<Project.Status> statuses);
     
-    // 获取活跃项目
-    @Query("SELECT p FROM Project p WHERE p.deleted = false " +
-           "AND p.status = 'ACTIVE'")
-    List<Project> findActiveProjects();
+    /**
+     * 统计项目总数
+     */
+    @Query("SELECT COUNT(p) FROM Project p")
+    long countAllProjects();
     
-    // 根据项目名称查找项目（精确匹配）
-    Optional<Project> findByNameAndDeletedFalse(String name);
+    /**
+     * 统计活跃项目数
+     */
+    @Query("SELECT COUNT(p) FROM Project p WHERE p.status = 'ACTIVE'")
+    long countActiveProjects();
     
-    // 全文搜索
-    @Query("SELECT p FROM Project p WHERE p.deleted = false " +
-           "AND (p.name LIKE %:keyword% " +
-           "OR p.description LIKE %:keyword% " +
-           "OR p.type LIKE %:keyword% " +
-           "OR p.tags LIKE %:keyword%)")
-    Page<Project> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
-    
-    // 根据标签搜索项目
-    @Query("SELECT p FROM Project p WHERE p.deleted = false " +
-           "AND p.tags LIKE %:tag%")
-    List<Project> findByTagsContaining(@Param("tag") String tag);
-    
-    // 获取项目统计信息
-    @Query("SELECT p.status, COUNT(p) FROM Project p WHERE p.deleted = false GROUP BY p.status")
-    List<Object[]> getProjectStatusStatistics();
-    
-    @Query("SELECT p.priority, COUNT(p) FROM Project p WHERE p.deleted = false GROUP BY p.priority")
-    List<Object[]> getProjectPriorityStatistics();
-    
-    @Query("SELECT p.type, COUNT(p) FROM Project p WHERE p.deleted = false AND p.type IS NOT NULL GROUP BY p.type")
-    List<Object[]> getProjectTypeStatistics();
-
-    // 仪表盘相关查询
-    // 按状态统计项目数量（字符串参数）
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false AND p.status = :status")
-    long countByStatusStringAndDeletedFalse(@Param("status") String status);
-
-    // 统计过期项目数量
-    @Query("SELECT COUNT(p) FROM Project p WHERE p.deleted = false " +
-           "AND p.endDate IS NOT NULL AND p.endDate < CURRENT_DATE " +
-           "AND p.status NOT IN ('COMPLETED', 'ARCHIVED')")
-    long countOverdueProjects();
-}
+    /**
+     * 统计已完成项目数
+     */
+    @Query("SELECT COUNT(p) FROM Project p WHERE p.status = 'COMPLETED'")
+    long countCompletedProjects();
+} 

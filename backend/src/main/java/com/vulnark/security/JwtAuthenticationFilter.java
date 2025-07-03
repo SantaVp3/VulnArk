@@ -37,16 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                   FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        logger.debug("JWT Filter processing request: {}", path);
-
         try {
             String jwt = getJwtFromRequest(request);
-            logger.debug("JWT token: {}", jwt != null ? "present" : "null");
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
-                logger.debug("Username from token: {}", username);
 
                 // 检查当前是否已有认证
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -63,11 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-                        logger.debug("Authentication set for user: {} with role: ROLE_{}", username, user.getRole());
                     });
                 }
-            } else {
-                logger.debug("No valid JWT token found for request: {}", path);
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e.getMessage());

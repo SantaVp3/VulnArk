@@ -35,7 +35,7 @@ public class Asset {
     private Status status = Status.ACTIVE;
     
     @Schema(description = "IP地址")
-    @Column(length = 45)
+    @Column(nullable = false, length = 45)
     private String ipAddress;
     
     @Schema(description = "域名")
@@ -66,7 +66,6 @@ public class Asset {
     private Importance importance = Importance.MEDIUM;
     
     @Schema(description = "所属项目ID")
-    @Column(nullable = false)
     private Long projectId;
     
     @Schema(description = "负责人ID")

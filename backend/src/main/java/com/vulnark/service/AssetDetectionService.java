@@ -136,16 +136,14 @@ public class AssetDetectionService {
     }
     
     /**
-     * 检测项目下的所有资产
+     * 检测项目下的所有资产 - 项目功能已删除
      */
     @Async
     public CompletableFuture<List<DetectionResult>> detectProjectAssets(Long projectId, boolean includeFingerprint) {
-        logger.info("开始检测项目资产: {}", projectId);
+        logger.info("检测项目资产功能已删除，返回空结果: {}", projectId);
         
-        List<Asset> assets = assetRepository.findByProjectIdAndDeletedFalse(projectId);
-        List<Long> assetIds = assets.stream().map(Asset::getId).toList();
-        
-        return detectAssets(assetIds, includeFingerprint);
+        // 项目功能已删除，返回空结果
+        return CompletableFuture.completedFuture(new ArrayList<>());
     }
     
     /**

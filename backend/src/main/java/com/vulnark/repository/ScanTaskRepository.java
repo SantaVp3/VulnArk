@@ -79,7 +79,7 @@ public interface ScanTaskRepository extends JpaRepository<ScanTask, Long> {
     @Query("SELECT COUNT(st) FROM ScanTask st WHERE st.scanType = :scanType AND st.deleted = false")
     long countByScanType(@Param("scanType") ScanTask.ScanType scanType);
 
-    @Query("SELECT COUNT(st) FROM ScanTask st WHERE st.project.id = :projectId AND st.deleted = false")
+    @Query("SELECT COUNT(st) FROM ScanTask st WHERE st.projectId = :projectId AND st.deleted = false")
     long countByProjectId(@Param("projectId") Long projectId);
 
     // 统计各状态的任务数量
@@ -95,7 +95,7 @@ public interface ScanTaskRepository extends JpaRepository<ScanTask, Long> {
     List<Object[]> getScanEngineStatistics();
 
     // 查询项目的扫描任务统计
-    @Query("SELECT st.status, COUNT(st) FROM ScanTask st WHERE st.project.id = :projectId " +
+    @Query("SELECT st.status, COUNT(st) FROM ScanTask st WHERE st.projectId = :projectId " +
            "AND st.deleted = false GROUP BY st.status")
     List<Object[]> getProjectTaskStatistics(@Param("projectId") Long projectId);
 
@@ -126,7 +126,7 @@ public interface ScanTaskRepository extends JpaRepository<ScanTask, Long> {
            "(:status IS NULL OR st.status = :status) AND " +
            "(:scanType IS NULL OR st.scanType = :scanType) AND " +
            "(:scanEngine IS NULL OR st.scanEngineType = :scanEngine) AND " +
-           "(:projectId IS NULL OR st.project.id = :projectId) AND " +
+           "(:projectId IS NULL OR st.projectId = :projectId) AND " +
            "(:createdById IS NULL OR st.createdBy.id = :createdById) AND " +
            "st.deleted = false")
     Page<ScanTask> findByConditions(@Param("name") String name,

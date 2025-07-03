@@ -3,6 +3,7 @@ package com.vulnark.service;
 import com.vulnark.dto.AssetQueryRequest;
 import com.vulnark.dto.AssetRequest;
 import com.vulnark.entity.Asset;
+import com.vulnark.exception.BusinessException;
 import com.vulnark.repository.AssetRepository;
 import com.vulnark.repository.VulnerabilityRepository;
 import org.springframework.beans.BeanUtils;
@@ -34,40 +35,34 @@ public class AssetService {
      * 创建资产
      */
     public Asset createAsset(AssetRequest request) {
-        // 检查IP地址是否已存在
-        if (StringUtils.hasText(request.getIpAddress())) {
-            Optional<Asset> existingAsset = assetRepository.findByIpAddressAndDeletedFalse(request.getIpAddress());
-            if (existingAsset.isPresent()) {
-                throw new RuntimeException("IP地址已存在");
-            }
-        }
-        
-        // 检查域名是否已存在
-        if (StringUtils.hasText(request.getDomain())) {
-            Optional<Asset> existingAsset = assetRepository.findByDomainAndDeletedFalse(request.getDomain());
-            if (existingAsset.isPresent()) {
-                throw new RuntimeException("域名已存在");
-            }
+        // 验证IP地址唯一性
+        if (assetRepository.findByIpAddressAndDeletedFalse(request.getIpAddress()).isPresent()) {
+            throw new BusinessException("IP地址已存在: " + request.getIpAddress());
         }
         
         Asset asset = new Asset();
-        BeanUtils.copyProperties(request, asset);
+        asset.setName(request.getName());
+        asset.setDescription(request.getDescription());
+        asset.setType(request.getType());
+        asset.setStatus(request.getStatus());
+        asset.setIpAddress(request.getIpAddress());
+        asset.setDomain(request.getDomain());
+        asset.setPort(request.getPort());
+        asset.setProtocol(request.getProtocol());
+        asset.setService(request.getService());
+        asset.setVersion(request.getVersion());
+        asset.setOperatingSystem(request.getOperatingSystem());
+        asset.setImportance(request.getImportance());
+        asset.setProjectId(request.getProjectId());
+        asset.setOwnerId(request.getOwnerId());
+        asset.setLocation(request.getLocation());
+        asset.setVendor(request.getVendor());
+        asset.setTags(request.getTags());
+        asset.setRiskScore(request.getRiskScore());
+        asset.setNotes(request.getNotes());
         
-        // 设置默认值
-        if (asset.getStatus() == null) {
-            asset.setStatus(Asset.Status.ACTIVE);
-        }
-        if (asset.getImportance() == null) {
-            asset.setImportance(Asset.Importance.MEDIUM);
-        }
-        if (asset.getVulnerabilityCount() == null) {
-            asset.setVulnerabilityCount(0);
-        }
-        if (asset.getRiskScore() == null) {
-            asset.setRiskScore(0.0);
-        }
-        
-        return assetRepository.save(asset);
+        Asset savedAsset = assetRepository.save(asset);
+        return savedAsset;
     }
     
     /**
@@ -76,96 +71,42 @@ public class AssetService {
     public Asset updateAsset(Long id, AssetRequest request) {
         Asset asset = getAssetById(id);
         
-        // 检查IP地址是否已被其他资产使用
-        if (StringUtils.hasText(request.getIpAddress()) && 
-            !request.getIpAddress().equals(asset.getIpAddress())) {
-            Optional<Asset> existingAsset = assetRepository.findByIpAddressAndDeletedFalse(request.getIpAddress());
-            if (existingAsset.isPresent()) {
-                throw new RuntimeException("IP地址已存在");
-            }
+        // 验证IP地址唯一性（排除自己）
+        Optional<Asset> existingAsset = assetRepository.findByIpAddressAndDeletedFalse(request.getIpAddress());
+        if (existingAsset.isPresent() && !existingAsset.get().getId().equals(id)) {
+            throw new BusinessException("IP地址已存在: " + request.getIpAddress());
         }
         
-        // 检查域名是否已被其他资产使用
-        if (StringUtils.hasText(request.getDomain()) && 
-            !request.getDomain().equals(asset.getDomain())) {
-            Optional<Asset> existingAsset = assetRepository.findByDomainAndDeletedFalse(request.getDomain());
-            if (existingAsset.isPresent()) {
-                throw new RuntimeException("域名已存在");
-            }
-        }
-        
-        // 更新字段
-        if (request.getName() != null) {
-            asset.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
-            asset.setDescription(request.getDescription());
-        }
-        if (request.getType() != null) {
-            asset.setType(request.getType());
-        }
-        if (request.getStatus() != null) {
-            asset.setStatus(request.getStatus());
-        }
-        if (request.getIpAddress() != null) {
-            asset.setIpAddress(request.getIpAddress());
-        }
-        if (request.getDomain() != null) {
-            asset.setDomain(request.getDomain());
-        }
-        if (request.getPort() != null) {
-            asset.setPort(request.getPort());
-        }
-        if (request.getProtocol() != null) {
-            asset.setProtocol(request.getProtocol());
-        }
-        if (request.getService() != null) {
-            asset.setService(request.getService());
-        }
-        if (request.getVersion() != null) {
-            asset.setVersion(request.getVersion());
-        }
-        if (request.getOperatingSystem() != null) {
-            asset.setOperatingSystem(request.getOperatingSystem());
-        }
-        if (request.getImportance() != null) {
-            asset.setImportance(request.getImportance());
-        }
-        if (request.getProjectId() != null) {
-            asset.setProjectId(request.getProjectId());
-        }
-        if (request.getOwnerId() != null) {
-            asset.setOwnerId(request.getOwnerId());
-        }
-        if (request.getLocation() != null) {
-            asset.setLocation(request.getLocation());
-        }
-        if (request.getVendor() != null) {
-            asset.setVendor(request.getVendor());
-        }
-        if (request.getTags() != null) {
-            asset.setTags(request.getTags());
-        }
-        if (request.getLastScanTime() != null) {
-            asset.setLastScanTime(request.getLastScanTime());
-        }
-        if (request.getRiskScore() != null) {
-            asset.setRiskScore(request.getRiskScore());
-        }
-        if (request.getNotes() != null) {
-            asset.setNotes(request.getNotes());
-        }
+        // 更新资产信息
+        asset.setName(request.getName());
+        asset.setDescription(request.getDescription());
+        asset.setType(request.getType());
+        asset.setStatus(request.getStatus());
+        asset.setIpAddress(request.getIpAddress());
+        asset.setDomain(request.getDomain());
+        asset.setPort(request.getPort());
+        asset.setProtocol(request.getProtocol());
+        asset.setService(request.getService());
+        asset.setVersion(request.getVersion());
+        asset.setOperatingSystem(request.getOperatingSystem());
+        asset.setImportance(request.getImportance());
+        asset.setProjectId(request.getProjectId());
+        asset.setOwnerId(request.getOwnerId());
+        asset.setLocation(request.getLocation());
+        asset.setVendor(request.getVendor());
+        asset.setTags(request.getTags());
+        asset.setRiskScore(request.getRiskScore());
+        asset.setNotes(request.getNotes());
         
         return assetRepository.save(asset);
     }
     
     /**
-     * 删除资产（逻辑删除）
+     * 删除资产（硬删除）
      */
     public void deleteAsset(Long id) {
         Asset asset = getAssetById(id);
-        asset.setDeleted(true);
-        assetRepository.save(asset);
+        assetRepository.delete(asset);
     }
     
     /**
@@ -187,23 +128,38 @@ public class AssetService {
         );
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
         
+        // 检查是否有任何过滤条件
+        boolean hasFilters = StringUtils.hasText(request.getName()) || 
+                             request.getType() != null || 
+                             request.getStatus() != null || 
+                             request.getImportance() != null || 
+                             request.getOwnerId() != null || 
+                             StringUtils.hasText(request.getIpAddress()) || 
+                             StringUtils.hasText(request.getDomain()) || 
+                             StringUtils.hasText(request.getKeyword());
+        
+        Page<Asset> result;
         // 如果有关键词搜索，使用全文搜索
         if (StringUtils.hasText(request.getKeyword())) {
-            return assetRepository.searchByKeyword(request.getKeyword(), pageable);
+            result = assetRepository.searchByKeyword(request.getKeyword(), pageable);
+        } else if (hasFilters) {
+            // 使用条件查询
+            result = assetRepository.findByConditions(
+                    request.getName(),
+                    request.getType(),
+                    request.getStatus(),
+                    request.getImportance(),
+                    request.getOwnerId(),
+                    request.getIpAddress(),
+                    request.getDomain(),
+                    pageable
+            );
+        } else {
+            // 如果没有任何过滤条件，返回所有未删除的资产
+            result = assetRepository.findByDeletedFalse(pageable);
         }
         
-        // 否则使用条件查询
-        return assetRepository.findByConditions(
-                request.getName(),
-                request.getType(),
-                request.getStatus(),
-                request.getImportance(),
-                request.getProjectId(),
-                request.getOwnerId(),
-                request.getIpAddress(),
-                request.getDomain(),
-                pageable
-        );
+        return result;
     }
     
     /**
@@ -214,10 +170,11 @@ public class AssetService {
     }
     
     /**
-     * 根据项目ID获取资产
+     * 根据项目ID获取资产 - 已删除项目功能
      */
     public List<Asset> getAssetsByProjectId(Long projectId) {
-        return assetRepository.findByProjectIdAndDeletedFalse(projectId);
+        // 项目功能已删除，返回空列表
+        return new ArrayList<>();
     }
     
     /**
@@ -294,13 +251,35 @@ public class AssetService {
     /**
      * 更新资产统计信息
      */
-    public Asset updateAssetStatistics(Long id) {
+    public boolean updateAssetStatistics(Long id) {
+        try {
+            Asset asset = getAssetById(id);
+            
+            // 更新漏洞数量
+            long vulnerabilityCount = vulnerabilityRepository.countByAssetIdAndDeletedFalse(id);
+            asset.setVulnerabilityCount((int) vulnerabilityCount);
+            
+            // TODO: 可以在这里添加更多统计逻辑，比如计算风险评分
+            
+            assetRepository.save(asset);
+            return true;
+        } catch (RuntimeException e) {
+            // 如果资产不存在，返回false而不是抛出异常
+            return false;
+        }
+    }
+
+    /**
+     * 更新资产统计信息并返回资产对象（用于API）
+     */
+    public Asset updateAssetStatisticsAndReturn(Long id) {
         Asset asset = getAssetById(id);
         
         // 更新漏洞数量
-        // TODO: 需要在Vulnerability实体中添加assetId字段
-        // long vulnerabilityCount = vulnerabilityRepository.countByAssetIdAndDeletedFalse(id);
-        // asset.setVulnerabilityCount((int) vulnerabilityCount);
+        long vulnerabilityCount = vulnerabilityRepository.countByAssetIdAndDeletedFalse(id);
+        asset.setVulnerabilityCount((int) vulnerabilityCount);
+        
+        // TODO: 可以在这里添加更多统计逻辑，比如计算风险评分
         
         return assetRepository.save(asset);
     }
@@ -354,6 +333,13 @@ public class AssetService {
         stats.setHigh(assetRepository.countByImportanceAndDeletedFalse(Asset.Importance.HIGH));
         stats.setCritical(assetRepository.countByImportanceAndDeletedFalse(Asset.Importance.CRITICAL));
         return stats;
+    }
+    
+    /**
+     * 获取所有资产总数
+     */
+    public long countAllAssets() {
+        return assetRepository.countByDeletedFalse();
     }
     
     // 内部类：资产统计信息

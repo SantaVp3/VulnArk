@@ -44,11 +44,9 @@ public class ScanTask {
     @Column(nullable = false)
     private TaskStatus status = TaskStatus.CREATED;
     
-    @Schema(description = "所属项目")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Project project;
+    @Schema(description = "所属项目ID")
+    @Column(nullable = false)
+    private Long projectId;
 
     @Schema(description = "目标资产数量")
     private Integer targetCount = 0;
@@ -229,10 +227,11 @@ public class ScanTask {
     // Constructors
     public ScanTask() {}
 
-    public ScanTask(String name, ScanType scanType, ScanEngine scanEngineType) {
+    public ScanTask(String name, ScanType scanType, ScanEngine scanEngineType, Long projectId) {
         this.name = name;
         this.scanType = scanType;
         this.scanEngineType = scanEngineType;
+        this.projectId = projectId;
     }
 
     // 便捷方法
@@ -359,9 +358,14 @@ public class ScanTask {
         this.status = status;
     }
     
-    // 新字段的getter和setter方法
-    public Project getProject() { return project; }
-    public void setProject(Project project) { this.project = project; }
+    public Long getProjectId() {
+        return projectId;
+    }
+    
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
 
     public Integer getTargetCount() { return targetCount; }
     public void setTargetCount(Integer targetCount) { this.targetCount = targetCount; }

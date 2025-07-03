@@ -93,12 +93,11 @@ public class UserManagementService {
     }
     
     /**
-     * 删除用户（逻辑删除）
+     * 删除用户（硬删除）
      */
     public void deleteUser(Long id) {
         User user = getUserById(id);
-        user.setDeleted(true);
-        userRepository.save(user);
+        userRepository.delete(user);
     }
     
     /**

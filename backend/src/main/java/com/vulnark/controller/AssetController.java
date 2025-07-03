@@ -8,6 +8,7 @@ import com.vulnark.service.AssetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,20 +32,18 @@ public class AssetController {
             Asset asset = assetService.createAsset(request);
             return ApiResponse.success("资产创建成功", asset);
         } catch (Exception e) {
-            return ApiResponse.error(e.getMessage());
+            return ApiResponse.error("创建失败: " + e.getMessage());
         }
     }
     
     @Operation(summary = "更新资产")
     @PutMapping("/{id}")
-    public ApiResponse<Asset> updateAsset(
-            @Parameter(description = "资产ID") @PathVariable Long id,
-            @Valid @RequestBody AssetRequest request) {
+    public ApiResponse<Asset> updateAsset(@PathVariable Long id, @Valid @RequestBody AssetRequest request) {
         try {
             Asset asset = assetService.updateAsset(id, request);
             return ApiResponse.success("资产更新成功", asset);
         } catch (Exception e) {
-            return ApiResponse.error(e.getMessage());
+            return ApiResponse.error("更新失败: " + e.getMessage());
         }
     }
     
@@ -87,8 +86,15 @@ public class AssetController {
             @Parameter(description = "页码") @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size,
             @Parameter(description = "排序字段") @RequestParam(defaultValue = "createdTime") String sortBy,
-            @Parameter(description = "排序方向") @RequestParam(defaultValue = "desc") String sortDir) {
+            @Parameter(description = "排序方向") @RequestParam(defaultValue = "desc") String sortDir,
+            HttpServletResponse response) {
         try {
+            // 添加缓存控制头，防止浏览器缓存
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "0");
+            
+            // 打印所有查询参数
             AssetQueryRequest request = new AssetQueryRequest();
             request.setName(name);
             request.setType(type);
@@ -107,7 +113,7 @@ public class AssetController {
             Page<Asset> assets = assetService.getAssets(request);
             return ApiResponse.success("获取资产列表成功", assets);
         } catch (Exception e) {
-            return ApiResponse.error(e.getMessage());
+            return ApiResponse.error("查询失败: " + e.getMessage());
         }
     }
     
@@ -238,7 +244,7 @@ public class AssetController {
     public ApiResponse<Asset> updateAssetStatistics(
             @Parameter(description = "资产ID") @PathVariable Long id) {
         try {
-            Asset asset = assetService.updateAssetStatistics(id);
+            Asset asset = assetService.updateAssetStatisticsAndReturn(id);
             return ApiResponse.success("资产统计信息更新成功", asset);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
@@ -275,6 +281,25 @@ public class AssetController {
             return ApiResponse.success("资产导出成功", assets);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
+        }
+    }
+    
+    @Operation(summary = "批量删除资产")
+    @PostMapping("/batch-delete")
+    public ApiResponse<String> batchDeleteAssets(@RequestBody Map<String, List<Long>> request) {
+        try {
+            List<Long> ids = request.get("ids");
+            if (ids == null || ids.isEmpty()) {
+                return ApiResponse.error("资产ID列表不能为空");
+            }
+            
+            for (Long id : ids) {
+                assetService.deleteAsset(id);
+            }
+            
+            return ApiResponse.success("批量删除资产成功", "删除成功");
+        } catch (Exception e) {
+            return ApiResponse.error("批量删除失败: " + e.getMessage());
         }
     }
 }

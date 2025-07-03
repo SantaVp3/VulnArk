@@ -91,7 +91,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<Object[]> getUserDepartmentStatistics();
 
     // 仪表盘相关查询
-    // 按启用状态统计用户数量
+    // 兼容旧的查询方法（保留以防有其他地方使用）
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false AND u.status = 'ACTIVE'")
     long countByEnabledTrueAndDeletedFalse();
 

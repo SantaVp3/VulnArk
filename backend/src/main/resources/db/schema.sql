@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS assets (
     description TEXT COMMENT '资产描述',
     type ENUM('SERVER', 'WORKSTATION', 'NETWORK_DEVICE', 'DATABASE', 'WEB_APPLICATION', 'MOBILE_APPLICATION', 'IOT_DEVICE', 'CLOUD_SERVICE', 'OTHER') NOT NULL COMMENT '资产类型',
     status ENUM('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'DECOMMISSIONED') NOT NULL DEFAULT 'ACTIVE' COMMENT '资产状态',
-    ip_address VARCHAR(45) COMMENT 'IP地址',
+    ip_address VARCHAR(45) NOT NULL COMMENT 'IP地址',
     domain VARCHAR(255) COMMENT '域名',
     port INT COMMENT '端口',
     protocol VARCHAR(20) COMMENT '协议',
@@ -250,6 +250,49 @@ CREATE TABLE IF NOT EXISTS asset_discovery_results (
     INDEX idx_discovery_results_status (correlation_status),
     INDEX idx_discovery_results_time (discovered_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产发现结果表';
+
+-- 扫描任务表
+CREATE TABLE IF NOT EXISTS scan_tasks (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL COMMENT '任务名称',
+    description TEXT COMMENT '任务描述',
+    type VARCHAR(50) NOT NULL COMMENT '扫描类型',
+    scan_engine_type VARCHAR(50) NOT NULL DEFAULT 'INTERNAL' COMMENT '扫描引擎类型',
+    scan_template VARCHAR(50) COMMENT '扫描模板',
+    status VARCHAR(50) NOT NULL DEFAULT 'CREATED' COMMENT '任务状态',
+    project_id BIGINT NOT NULL COMMENT '所属项目ID',
+    target_count INT DEFAULT 0 COMMENT '目标资产数量',
+    vulnerability_count INT DEFAULT 0 COMMENT '发现的漏洞数量',
+    total_vulnerability_count INT DEFAULT 0 COMMENT '总漏洞数量',
+    high_risk_count INT DEFAULT 0 COMMENT '高危漏洞数量',
+    medium_risk_count INT DEFAULT 0 COMMENT '中危漏洞数量',
+    low_risk_count INT DEFAULT 0 COMMENT '低危漏洞数量',
+    info_risk_count INT DEFAULT 0 COMMENT '信息级漏洞数量',
+    scan_config_id BIGINT COMMENT '扫描配置ID',
+    external_task_id VARCHAR(100) COMMENT '外部扫描任务ID',
+    scan_parameters TEXT COMMENT '扫描参数',
+    result_file_path VARCHAR(500) COMMENT '扫描结果文件路径',
+    created_by BIGINT COMMENT '创建者ID',
+    scheduled_start_time DATETIME COMMENT '计划开始时间',
+    actual_start_time DATETIME COMMENT '实际开始时间',
+    completed_time DATETIME COMMENT '完成时间',
+    scan_result LONGTEXT COMMENT '扫描结果',
+    port_count INT DEFAULT 0 COMMENT '发现的端口数量',
+    service_count INT DEFAULT 0 COMMENT '发现的服务数量',
+    error_message TEXT COMMENT '错误信息',
+    progress INT DEFAULT 0 COMMENT '进度百分比',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    FOREIGN KEY (project_id) REFERENCES projects(id),
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    INDEX idx_scan_tasks_project_id (project_id),
+    INDEX idx_scan_tasks_status (status),
+    INDEX idx_scan_tasks_type (type),
+    INDEX idx_scan_tasks_engine (scan_engine_type),
+    INDEX idx_scan_tasks_created_by (created_by),
+    INDEX idx_scan_tasks_created_time (created_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扫描任务表';
 
 -- 创建索引
 CREATE INDEX idx_vulnerabilities_project_id ON vulnerabilities(project_id);

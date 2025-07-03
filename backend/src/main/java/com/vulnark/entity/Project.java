@@ -1,114 +1,105 @@
 package com.vulnark.entity;
 
 import jakarta.persistence.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Schema(description = "项目实体")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "projects")
 public class Project {
     
-    @Schema(description = "项目ID")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Schema(description = "项目名称")
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 200)
     private String name;
     
-    @Schema(description = "项目描述")
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String description;
     
-    @Schema(description = "项目负责人ID")
-    @Column(nullable = false)
-    private Long ownerId;
-    
-    @Schema(description = "项目状态")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.ACTIVE;
     
-    @Schema(description = "项目类型")
-    @Column(length = 50)
-    private String type;
-    
-    @Schema(description = "项目优先级")
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Priority priority = Priority.MEDIUM;
     
-    @Schema(description = "开始日期")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate startDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
     
-    @Schema(description = "结束日期")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate endDate;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "project_members",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> members;
     
-    @Schema(description = "预算")
-    private Double budget;
+    @Column(length = 100)
+    private String department;
     
-    @Schema(description = "项目标签")
+    @Column
+    private LocalDateTime startDate;
+    
+    @Column
+    private LocalDateTime endDate;
+    
+    @Column(precision = 12, scale = 2)
+    private BigDecimal budget;
+    
     @Column(length = 500)
     private String tags;
     
-    @Schema(description = "项目成员数量")
-    private Integer memberCount = 0;
-    
-    @Schema(description = "漏洞数量")
-    private Integer vulnerabilityCount = 0;
-    
-    @Schema(description = "资产数量")
-    private Integer assetCount = 0;
-    
-    @Schema(description = "项目进度百分比")
-    private Integer progress = 0;
-    
-    @Schema(description = "创建时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdTime;
     
-    @Schema(description = "更新时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @UpdateTimestamp
+    @Column(nullable = false)
     private LocalDateTime updatedTime;
     
-    @Schema(description = "逻辑删除标记")
-    @Column(nullable = false)
-    private Boolean deleted = false;
-    
-    // 枚举定义
     public enum Status {
-        ACTIVE, INACTIVE, COMPLETED, ARCHIVED, SUSPENDED
+        PLANNING("规划中"),
+        ACTIVE("进行中"), 
+        ON_HOLD("暂停"),
+        COMPLETED("已完成"),
+        CANCELLED("已取消");
+        
+        private final String displayName;
+        
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     public enum Priority {
-        LOW, MEDIUM, HIGH, CRITICAL
-    }
-    
-    @PrePersist
-    protected void onCreate() {
-        createdTime = LocalDateTime.now();
-        updatedTime = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedTime = LocalDateTime.now();
-    }
-    
-    // Constructors
-    public Project() {}
-    
-    public Project(String name, String description, Long ownerId) {
-        this.name = name;
-        this.description = description;
-        this.ownerId = ownerId;
+        LOW("低"),
+        MEDIUM("中"),
+        HIGH("高"),
+        CRITICAL("紧急");
+        
+        private final String displayName;
+        
+        Priority(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
     }
     
     // Getters and Setters
@@ -136,28 +127,12 @@ public class Project {
         this.description = description;
     }
     
-    public Long getOwnerId() {
-        return ownerId;
-    }
-    
-    public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
-    }
-    
     public Status getStatus() {
         return status;
     }
     
     public void setStatus(Status status) {
         this.status = status;
-    }
-    
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
     }
     
     public Priority getPriority() {
@@ -168,27 +143,51 @@ public class Project {
         this.priority = priority;
     }
     
-    public LocalDate getStartDate() {
+    public User getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+    
+    public List<User> getMembers() {
+        return members;
+    }
+    
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
+    
+    public String getDepartment() {
+        return department;
+    }
+    
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+    
+    public LocalDateTime getStartDate() {
         return startDate;
     }
     
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
     
-    public LocalDate getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
     
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
     
-    public Double getBudget() {
+    public BigDecimal getBudget() {
         return budget;
     }
     
-    public void setBudget(Double budget) {
+    public void setBudget(BigDecimal budget) {
         this.budget = budget;
     }
     
@@ -198,38 +197,6 @@ public class Project {
     
     public void setTags(String tags) {
         this.tags = tags;
-    }
-    
-    public Integer getMemberCount() {
-        return memberCount;
-    }
-    
-    public void setMemberCount(Integer memberCount) {
-        this.memberCount = memberCount;
-    }
-    
-    public Integer getVulnerabilityCount() {
-        return vulnerabilityCount;
-    }
-    
-    public void setVulnerabilityCount(Integer vulnerabilityCount) {
-        this.vulnerabilityCount = vulnerabilityCount;
-    }
-    
-    public Integer getAssetCount() {
-        return assetCount;
-    }
-    
-    public void setAssetCount(Integer assetCount) {
-        this.assetCount = assetCount;
-    }
-    
-    public Integer getProgress() {
-        return progress;
-    }
-    
-    public void setProgress(Integer progress) {
-        this.progress = progress;
     }
     
     public LocalDateTime getCreatedTime() {
@@ -247,12 +214,4 @@ public class Project {
     public void setUpdatedTime(LocalDateTime updatedTime) {
         this.updatedTime = updatedTime;
     }
-    
-    public Boolean getDeleted() {
-        return deleted;
-    }
-    
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-}
+} 

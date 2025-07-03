@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .requestMatchers("/scan-tasks/**").authenticated()
                 .requestMatchers("/scan-configs/**").authenticated()
                 .requestMatchers("/asset-detection/**").authenticated()
+                .requestMatchers("/baseline/**").authenticated()
                 .requestMatchers("/admin/**").authenticated()
                 // 其他请求需要认证
                 .anyRequest().authenticated()

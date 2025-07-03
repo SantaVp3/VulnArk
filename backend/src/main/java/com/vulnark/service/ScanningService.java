@@ -408,10 +408,10 @@ public class ScanningService {
             response.setCreatedByName(scanTask.getCreatedBy().getUsername());
         }
 
-        if (scanTask.getProject() != null) {
-            response.setProjectId(scanTask.getProject().getId());
-            response.setProjectName(scanTask.getProject().getName());
-        }
+        // if (scanTask.getProject() != null) {
+        //     response.setProjectId(scanTask.getProject().getId());
+        //     response.setProjectName(scanTask.getProject().getName());
+        // } // 已删除项目功能
 
         // 计算实际执行时间
         if (scanTask.getActualStartTime() != null && scanTask.getCompletedTime() != null) {

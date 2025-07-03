@@ -34,7 +34,6 @@ com/vulnark/service/AssetService$AssetStats.class
 com/vulnark/service/detection/AssetDetectionEngine.class
 com/vulnark/entity/AssetDiscoveryTask$TaskStatus.class
 com/vulnark/service/VulnerabilityService$VulnerabilityStats.class
-com/vulnark/dto/ProjectRequest.class
 com/vulnark/service/DashboardService$ProjectDashboardStats.class
 com/vulnark/service/ScanTaskService.class
 com/vulnark/dto/AssetDependencyResponse.class
@@ -98,6 +97,7 @@ com/vulnark/repository/ScanTaskTargetRepository.class
 com/vulnark/dto/AssetDependencyRequest.class
 com/vulnark/service/detection/AssetDetectionEngine$2.class
 com/vulnark/dto/AssetQueryRequest.class
+com/vulnark/service/impl/ProjectServiceImpl$1.class
 com/vulnark/service/DashboardService$AssetStatusDistribution.class
 com/vulnark/entity/ScanConfig$ScanDepth.class
 com/vulnark/controller/TestController.class
@@ -123,6 +123,7 @@ com/vulnark/service/AssetDependencyService$AssetDependencyNode.class
 com/vulnark/repository/VulnerabilityStatusChangeRepository.class
 com/vulnark/controller/AuthController.class
 com/vulnark/entity/Project.class
+com/vulnark/service/impl/ProjectServiceImpl.class
 com/vulnark/service/DashboardService$RecentActivity.class
 com/vulnark/security/JwtTokenProvider.class
 com/vulnark/entity/BaselineCheckItem.class
@@ -138,7 +139,6 @@ com/vulnark/dto/ScanTaskResponse.class
 com/vulnark/controller/BaselineCheckController.class
 com/vulnark/dto/LoginRequest.class
 com/vulnark/controller/UserManagementController.class
-com/vulnark/dto/ProjectQueryRequest.class
 com/vulnark/entity/ScanResult$Severity.class
 com/vulnark/service/VulnerabilityStatusChangeService.class
 com/vulnark/entity/Project$Priority.class
