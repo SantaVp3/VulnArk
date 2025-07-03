@@ -89,6 +89,7 @@ npm run dev
 ```bash
 username：admin
 Password：password123
+```
 
 ## 项目截图
 <img width="779" alt="iShot_2025-07-03_15 25 01" src="https://github.com/user-attachments/assets/f1a0d26e-ef5c-40fb-9214-1d27798e7e0b" />
