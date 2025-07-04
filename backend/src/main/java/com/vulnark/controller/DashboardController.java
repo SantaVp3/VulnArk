@@ -73,19 +73,7 @@ public class DashboardController {
         }
     }
 
-    @Operation(summary = "获取项目漏洞排行榜", description = "获取项目按漏洞数量的排行榜")
-    @GetMapping("/project-vulnerability-ranks")
-    public ResponseEntity<ApiResponse<List<DashboardService.ProjectVulnerabilityRankData>>> getProjectVulnerabilityRanks(
-            @Parameter(description = "数量限制") @RequestParam(defaultValue = "10") Integer limit) {
-        try {
-            List<DashboardService.ProjectVulnerabilityRankData> ranks = dashboardService.getProjectVulnerabilityRanks(limit);
-            return ResponseEntity.ok(ApiResponse.success("获取项目漏洞排行榜成功", ranks));
-        } catch (Exception e) {
-            logger.error("获取项目漏洞排行榜失败", e);
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("获取项目漏洞排行榜失败: " + e.getMessage()));
-        }
-    }
+
 
     @Operation(summary = "获取资产状态分布", description = "获取资产按状态的分布统计")
     @GetMapping("/asset-status-distribution")

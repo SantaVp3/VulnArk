@@ -65,8 +65,7 @@ public class Asset {
     @Enumerated(EnumType.STRING)
     private Importance importance = Importance.MEDIUM;
     
-    @Schema(description = "所属项目ID")
-    private Long projectId;
+
     
     @Schema(description = "负责人ID")
     private Long ownerId;
@@ -138,10 +137,9 @@ public class Asset {
     // Constructors
     public Asset() {}
     
-    public Asset(String name, AssetType type, Long projectId) {
+    public Asset(String name, AssetType type) {
         this.name = name;
         this.type = type;
-        this.projectId = projectId;
     }
     
     // Getters and Setters
@@ -249,13 +247,7 @@ public class Asset {
         this.importance = importance;
     }
     
-    public Long getProjectId() {
-        return projectId;
-    }
-    
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
+
     
     public Long getOwnerId() {
         return ownerId;

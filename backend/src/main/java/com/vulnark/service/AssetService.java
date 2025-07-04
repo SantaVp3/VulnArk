@@ -53,7 +53,7 @@ public class AssetService {
         asset.setVersion(request.getVersion());
         asset.setOperatingSystem(request.getOperatingSystem());
         asset.setImportance(request.getImportance());
-        asset.setProjectId(request.getProjectId());
+
         asset.setOwnerId(request.getOwnerId());
         asset.setLocation(request.getLocation());
         asset.setVendor(request.getVendor());
@@ -90,7 +90,7 @@ public class AssetService {
         asset.setVersion(request.getVersion());
         asset.setOperatingSystem(request.getOperatingSystem());
         asset.setImportance(request.getImportance());
-        asset.setProjectId(request.getProjectId());
+
         asset.setOwnerId(request.getOwnerId());
         asset.setLocation(request.getLocation());
         asset.setVendor(request.getVendor());

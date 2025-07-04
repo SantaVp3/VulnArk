@@ -15,7 +15,7 @@ export interface Asset {
   version?: string
   operatingSystem?: string
   importance: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  projectId?: number
+
   ownerId?: number
   location?: string
   vendor?: string
@@ -31,7 +31,7 @@ export interface AssetQueryParams {
   type?: string
   status?: string
   importance?: string
-  projectId?: number
+
   ownerId?: number
   ipAddress?: string
   domain?: string
@@ -130,8 +130,5 @@ export const assetApi = {
     return request.get<Asset[]>('/assets/search', { params: { keyword } })
   },
 
-  // 按项目获取资产
-  getAssetsByProject: (projectId: number) => {
-    return request.get<Asset[]>(`/assets/project/${projectId}`)
-  }
+
 } 

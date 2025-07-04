@@ -77,9 +77,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.importance = :importance")
     long countByImportanceAndDeletedFalse(@Param("importance") Asset.Importance importance);
     
-    // 项目相关的统计查询
-    @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.projectId = :projectId")
-    long countByProjectId(@Param("projectId") Long projectId);
+
     
     @Query("SELECT COUNT(a) FROM Asset a WHERE a.deleted = false AND a.ownerId = :ownerId")
     long countByOwnerIdAndDeletedFalse(@Param("ownerId") Long ownerId);

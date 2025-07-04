@@ -154,40 +154,7 @@ public class AssetDependencyService {
                 .collect(Collectors.toList());
     }
     
-    /**
-     * 获取项目的资产依赖拓扑图 - 项目功能已删除
-     */
-    public AssetDependencyTopology getProjectDependencyTopology(Long projectId) {
-        // 项目功能已删除，返回所有资产
-        List<Asset> assets = assetRepository.findByDeletedFalse();
-        
-        // 获取项目的所有依赖关系
-        List<AssetDependency> dependencies = dependencyRepository.findByProjectId(projectId);
-        
-        // 构建拓扑图
-        AssetDependencyTopology topology = new AssetDependencyTopology();
-        
-        // 转换节点
-        List<AssetDependencyNode> nodes = assets.stream()
-                .map(AssetDependencyNode::fromAsset)
-                .collect(Collectors.toList());
-        
-        // 转换边
-        List<AssetDependencyEdge> edges = dependencies.stream()
-                .map(AssetDependencyEdge::fromDependency)
-                .collect(Collectors.toList());
-        
-        // 计算节点位置（简单的圆形布局）
-        calculateNodePositions(nodes);
-        
-        topology.setNodes(nodes);
-        topology.setEdges(edges);
-        topology.setProjectId(projectId);
-        topology.setTotalNodes(nodes.size());
-        topology.setTotalEdges(edges.size());
-        
-        return topology;
-    }
+
     
     /**
      * 分析资产依赖路径
@@ -224,12 +191,8 @@ public class AssetDependencyService {
      * 获取依赖统计信息
      */
     public DependencyStatistics getDependencyStatistics(Long projectId) {
-        List<AssetDependency> dependencies;
-        if (projectId != null) {
-            dependencies = dependencyRepository.findByProjectId(projectId);
-        } else {
-            dependencies = dependencyRepository.findByDeletedFalse();
-        }
+        // 项目功能已删除，直接获取所有依赖关系
+        List<AssetDependency> dependencies = dependencyRepository.findByDeletedFalse();
         
         DependencyStatistics stats = new DependencyStatistics();
         stats.setTotalDependencies(dependencies.size());

@@ -43,12 +43,7 @@
           漏洞管理
         </a-menu-item>
         
-        <a-menu-item key="/scans">
-          <template #icon>
-            <icon-scan />
-          </template>
-          扫描管理
-        </a-menu-item>
+
         
         <a-sub-menu key="discovery">
           <template #icon>
@@ -140,7 +135,6 @@ import {
   IconDashboard,
   IconDesktop,
   IconBug,
-  IconScan,
   IconFindReplace,
   IconUser,
   IconSettings,

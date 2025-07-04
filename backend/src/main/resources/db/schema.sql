@@ -20,40 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
--- 项目表
-CREATE TABLE IF NOT EXISTS projects (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL COMMENT '项目名称',
-    description TEXT COMMENT '项目描述',
-    owner_id BIGINT NOT NULL COMMENT '项目负责人ID',
-    status ENUM('ACTIVE', 'INACTIVE', 'COMPLETED', 'ARCHIVED', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE' COMMENT '项目状态',
-    type VARCHAR(50) COMMENT '项目类型',
-    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM' COMMENT '优先级',
-    start_date DATE COMMENT '开始日期',
-    end_date DATE COMMENT '结束日期',
-    budget DECIMAL(15,2) COMMENT '预算',
-    tags VARCHAR(500) COMMENT '项目标签',
-    member_count INT DEFAULT 0 COMMENT '项目成员数量',
-    vulnerability_count INT DEFAULT 0 COMMENT '漏洞数量',
-    asset_count INT DEFAULT 0 COMMENT '资产数量',
-    progress INT DEFAULT 0 COMMENT '项目进度百分比',
-    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    FOREIGN KEY (owner_id) REFERENCES users(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目表';
 
--- 项目成员表
-CREATE TABLE IF NOT EXISTS project_members (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    project_id BIGINT NOT NULL COMMENT '项目ID',
-    user_id BIGINT NOT NULL COMMENT '用户ID',
-    role ENUM('OWNER', 'MANAGER', 'MEMBER', 'VIEWER') NOT NULL DEFAULT 'MEMBER' COMMENT '项目角色',
-    joined_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
-    UNIQUE KEY uk_project_user (project_id, user_id),
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目成员表';
 
 -- 资产表
 CREATE TABLE IF NOT EXISTS assets (
@@ -70,19 +37,19 @@ CREATE TABLE IF NOT EXISTS assets (
     version VARCHAR(50) COMMENT '版本',
     operating_system VARCHAR(100) COMMENT '操作系统',
     importance ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') DEFAULT 'MEDIUM' COMMENT '重要性等级',
-    project_id BIGINT NOT NULL COMMENT '所属项目ID',
+
     owner_id BIGINT COMMENT '负责人ID',
     location VARCHAR(200) COMMENT '位置',
     vendor VARCHAR(100) COMMENT '供应商',
     tags VARCHAR(500) COMMENT '资产标签',
-    last_scan_time DATETIME COMMENT '最后扫描时间',
+
     vulnerability_count INT DEFAULT 0 COMMENT '漏洞数量',
     risk_score DECIMAL(3,1) DEFAULT 0.0 COMMENT '风险评分',
     notes TEXT COMMENT '备注',
     created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    FOREIGN KEY (project_id) REFERENCES projects(id),
+
     FOREIGN KEY (owner_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产表';
 
@@ -96,7 +63,7 @@ CREATE TABLE IF NOT EXISTS vulnerabilities (
     category VARCHAR(50) COMMENT '漏洞分类',
     cve_id VARCHAR(20) COMMENT 'CVE编号',
     cvss_score DECIMAL(3,1) COMMENT 'CVSS评分',
-    project_id BIGINT NOT NULL COMMENT '所属项目ID',
+
     reporter_id BIGINT NOT NULL COMMENT '报告人ID',
     assignee_id BIGINT COMMENT '负责人ID',
     discovered_date DATE NOT NULL COMMENT '发现日期',
@@ -110,7 +77,7 @@ CREATE TABLE IF NOT EXISTS vulnerabilities (
     created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    FOREIGN KEY (project_id) REFERENCES projects(id),
+
     FOREIGN KEY (reporter_id) REFERENCES users(id),
     FOREIGN KEY (assignee_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='漏洞表';
@@ -161,7 +128,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     user_id BIGINT NOT NULL COMMENT '接收者ID',
     title VARCHAR(200) NOT NULL COMMENT '通知标题',
     content TEXT COMMENT '通知内容',
-    type ENUM('VULNERABILITY', 'PROJECT', 'SYSTEM') NOT NULL COMMENT '通知类型',
+    type ENUM('VULNERABILITY', 'SYSTEM') NOT NULL COMMENT '通知类型',
     status ENUM('UNREAD', 'READ') NOT NULL DEFAULT 'UNREAD' COMMENT '状态',
     related_id BIGINT COMMENT '关联ID',
     created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -204,9 +171,9 @@ CREATE TABLE IF NOT EXISTS asset_discovery_tasks (
     description TEXT COMMENT '任务描述',
     target_type ENUM('IP_RANGE', 'SUBNET', 'DOMAIN', 'URL_LIST', 'CUSTOM') NOT NULL COMMENT '目标类型',
     targets TEXT NOT NULL COMMENT '扫描目标（JSON格式）',
-    scan_type ENUM('PING_SWEEP', 'PORT_SCAN', 'SERVICE_DETECTION', 'FULL_SCAN') NOT NULL COMMENT '扫描类型',
-    scan_ports VARCHAR(1000) COMMENT '扫描端口范围',
-    scan_options JSON COMMENT '扫描选项配置',
+    discovery_type ENUM('PING_SWEEP', 'PORT_SCAN', 'SERVICE_DETECTION', 'FULL_DISCOVERY') NOT NULL COMMENT '发现类型',
+    discovery_ports VARCHAR(1000) COMMENT '发现端口范围',
+    discovery_options JSON COMMENT '发现选项配置',
     schedule_type ENUM('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM') NOT NULL DEFAULT 'ONCE' COMMENT '调度类型',
     schedule_config JSON COMMENT '调度配置',
     status ENUM('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL DEFAULT 'PENDING' COMMENT '任务状态',
@@ -251,51 +218,10 @@ CREATE TABLE IF NOT EXISTS asset_discovery_results (
     INDEX idx_discovery_results_time (discovered_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产发现结果表';
 
--- 扫描任务表
-CREATE TABLE IF NOT EXISTS scan_tasks (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(200) NOT NULL COMMENT '任务名称',
-    description TEXT COMMENT '任务描述',
-    type VARCHAR(50) NOT NULL COMMENT '扫描类型',
-    scan_engine_type VARCHAR(50) NOT NULL DEFAULT 'INTERNAL' COMMENT '扫描引擎类型',
-    scan_template VARCHAR(50) COMMENT '扫描模板',
-    status VARCHAR(50) NOT NULL DEFAULT 'CREATED' COMMENT '任务状态',
-    project_id BIGINT NOT NULL COMMENT '所属项目ID',
-    target_count INT DEFAULT 0 COMMENT '目标资产数量',
-    vulnerability_count INT DEFAULT 0 COMMENT '发现的漏洞数量',
-    total_vulnerability_count INT DEFAULT 0 COMMENT '总漏洞数量',
-    high_risk_count INT DEFAULT 0 COMMENT '高危漏洞数量',
-    medium_risk_count INT DEFAULT 0 COMMENT '中危漏洞数量',
-    low_risk_count INT DEFAULT 0 COMMENT '低危漏洞数量',
-    info_risk_count INT DEFAULT 0 COMMENT '信息级漏洞数量',
-    scan_config_id BIGINT COMMENT '扫描配置ID',
-    external_task_id VARCHAR(100) COMMENT '外部扫描任务ID',
-    scan_parameters TEXT COMMENT '扫描参数',
-    result_file_path VARCHAR(500) COMMENT '扫描结果文件路径',
-    created_by BIGINT COMMENT '创建者ID',
-    scheduled_start_time DATETIME COMMENT '计划开始时间',
-    actual_start_time DATETIME COMMENT '实际开始时间',
-    completed_time DATETIME COMMENT '完成时间',
-    scan_result LONGTEXT COMMENT '扫描结果',
-    port_count INT DEFAULT 0 COMMENT '发现的端口数量',
-    service_count INT DEFAULT 0 COMMENT '发现的服务数量',
-    error_message TEXT COMMENT '错误信息',
-    progress INT DEFAULT 0 COMMENT '进度百分比',
-    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    updated_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    FOREIGN KEY (project_id) REFERENCES projects(id),
-    FOREIGN KEY (created_by) REFERENCES users(id),
-    INDEX idx_scan_tasks_project_id (project_id),
-    INDEX idx_scan_tasks_status (status),
-    INDEX idx_scan_tasks_type (type),
-    INDEX idx_scan_tasks_engine (scan_engine_type),
-    INDEX idx_scan_tasks_created_by (created_by),
-    INDEX idx_scan_tasks_created_time (created_time)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='扫描任务表';
+
 
 -- 创建索引
-CREATE INDEX idx_vulnerabilities_project_id ON vulnerabilities(project_id);
+
 CREATE INDEX idx_vulnerabilities_status ON vulnerabilities(status);
 CREATE INDEX idx_vulnerabilities_severity ON vulnerabilities(severity);
 CREATE INDEX idx_vulnerabilities_assignee_id ON vulnerabilities(assignee_id);

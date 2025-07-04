@@ -59,14 +59,7 @@ public class DashboardService {
             stats.setVulnerabilities(vulnStats);
         }
 
-        // 项目统计 - 已删除项目功能，设置默认值
-        ProjectDashboardStats projectStats = new ProjectDashboardStats();
-        projectStats.setTotal(0);
-        projectStats.setActive(0);
-        projectStats.setCompleted(0);
-        projectStats.setArchived(0);
-        projectStats.setOverdue(0);
-        stats.setProjects(projectStats);
+
 
         try {
             // 资产统计
@@ -153,27 +146,7 @@ public class DashboardService {
         return distribution;
     }
 
-    /**
-     * 获取项目漏洞排行榜
-     */
-    public List<ProjectVulnerabilityRankData> getProjectVulnerabilityRanks(Integer limit) {
-        try {
-            List<Object[]> results = vulnerabilityRepository.getProjectVulnerabilityRanks(limit);
 
-            return results.stream().map(row -> {
-                ProjectVulnerabilityRankData rank = new ProjectVulnerabilityRankData();
-                rank.setProjectId(row[0] != null ? ((Number) row[0]).longValue() : 0L);
-                rank.setProjectName(row[1] != null ? (String) row[1] : "未知项目");
-                rank.setVulnerabilityCount(row[2] != null ? ((Number) row[2]).longValue() : 0L);
-                rank.setCriticalCount(row[3] != null ? ((Number) row[3]).longValue() : 0L);
-                rank.setHighCount(row[4] != null ? ((Number) row[4]).longValue() : 0L);
-                return rank;
-            }).collect(Collectors.toList());
-        } catch (Exception e) {
-            // 如果查询失败，返回空列表
-            return new ArrayList<>();
-        }
-    }
 
     /**
      * 获取资产状态分布
@@ -291,15 +264,12 @@ public class DashboardService {
     // 数据传输对象
     public static class DashboardStats {
         private VulnerabilityDashboardStats vulnerabilities;
-        private ProjectDashboardStats projects;
         private AssetDashboardStats assets;
         private UserDashboardStats users;
 
         // Getters and Setters
         public VulnerabilityDashboardStats getVulnerabilities() { return vulnerabilities; }
         public void setVulnerabilities(VulnerabilityDashboardStats vulnerabilities) { this.vulnerabilities = vulnerabilities; }
-        public ProjectDashboardStats getProjects() { return projects; }
-        public void setProjects(ProjectDashboardStats projects) { this.projects = projects; }
         public AssetDashboardStats getAssets() { return assets; }
         public void setAssets(AssetDashboardStats assets) { this.assets = assets; }
         public UserDashboardStats getUsers() { return users; }
@@ -344,25 +314,7 @@ public class DashboardService {
         public void setReopened(long reopened) { this.reopened = reopened; }
     }
 
-    public static class ProjectDashboardStats {
-        private long total;
-        private long active;
-        private long completed;
-        private long archived;
-        private long overdue;
 
-        // Getters and Setters
-        public long getTotal() { return total; }
-        public void setTotal(long total) { this.total = total; }
-        public long getActive() { return active; }
-        public void setActive(long active) { this.active = active; }
-        public long getCompleted() { return completed; }
-        public void setCompleted(long completed) { this.completed = completed; }
-        public long getArchived() { return archived; }
-        public void setArchived(long archived) { this.archived = archived; }
-        public long getOverdue() { return overdue; }
-        public void setOverdue(long overdue) { this.overdue = overdue; }
-    }
 
     public static class AssetDashboardStats {
         private long total;
@@ -438,25 +390,7 @@ public class DashboardService {
         public void setPercentage(double percentage) { this.percentage = percentage; }
     }
 
-    public static class ProjectVulnerabilityRankData {
-        private long projectId;
-        private String projectName;
-        private long vulnerabilityCount;
-        private long criticalCount;
-        private long highCount;
 
-        // Getters and Setters
-        public long getProjectId() { return projectId; }
-        public void setProjectId(long projectId) { this.projectId = projectId; }
-        public String getProjectName() { return projectName; }
-        public void setProjectName(String projectName) { this.projectName = projectName; }
-        public long getVulnerabilityCount() { return vulnerabilityCount; }
-        public void setVulnerabilityCount(long vulnerabilityCount) { this.vulnerabilityCount = vulnerabilityCount; }
-        public long getCriticalCount() { return criticalCount; }
-        public void setCriticalCount(long criticalCount) { this.criticalCount = criticalCount; }
-        public long getHighCount() { return highCount; }
-        public void setHighCount(long highCount) { this.highCount = highCount; }
-    }
 
     public static class AssetStatusDistribution {
         private String status;

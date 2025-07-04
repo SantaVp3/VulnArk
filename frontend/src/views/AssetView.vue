@@ -476,7 +476,7 @@ const formData = reactive<Partial<Asset>>({
   version: '',
   operatingSystem: '',
   importance: 'MEDIUM',
-  projectId: 1,
+
   ownerId: null,
   location: '',
   vendor: '',
@@ -624,7 +624,7 @@ const handleEdit = (asset) => {
   formData.version = asset.version
   formData.operatingSystem = asset.operatingSystem
   formData.importance = asset.importance
-  formData.projectId = asset.projectId
+
   
   // 确保ownerId是数字类型或null
   formData.ownerId = asset.ownerId ? Number(asset.ownerId) : null
@@ -718,10 +718,7 @@ const handleSave = async () => {
       return;
     }
     
-    // 确保projectId存在
-    if (!submitData.projectId) {
-      submitData.projectId = 1; // 设置默认项目ID
-    }
+
     
     if (editingAsset.value) {
       await assetApi.updateAsset(editingAsset.value.id!, submitData)
@@ -918,7 +915,7 @@ const resetFormData = () => {
     version: '',
     operatingSystem: '',
     importance: 'MEDIUM',
-    projectId: 1,
+
     ownerId: null,
     location: '',
     vendor: '',

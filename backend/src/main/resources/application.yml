@@ -8,31 +8,76 @@ spring:
     name: vulnark-backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/vulnark
-    username: your_username
-    password: your_password
+    url: ${DB_URL:jdbc:mysql://localhost:3306/vulnark?useUnicode=true&characterEncoding=utf8&useSSL=true&requireSSL=true&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:vulnark}
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    open-in-view: false
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+    template:
+      mandatory: false
 
 # JWT Configuration
 jwt:
-  secret: vulnark-secret-key-2023-enterprise-security-very-long-key-for-production
-  expiration: 86400000 # 24 hours
+  secret: ${JWT_SECRET:}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours
 
 # Logging
 logging:
   level:
-    com.vulnark: debug
-    com.vulnark.security: debug
+    com.vulnark: DEBUG
+    org.springframework.security: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# Scan Engine Configuration
+scan:
+  nuclei:
+    path: ${NUCLEI_PATH:/usr/local/bin/nuclei}
+    templates:
+      path: ${NUCLEI_TEMPLATES_PATH:/opt/nuclei-templates}
+    output:
+      dir: ${NUCLEI_OUTPUT_DIR:/tmp/nuclei-output}
+  
+  xray:
+    path: ${XRAY_PATH:/usr/local/bin/xray}
+    output:
+      dir: ${XRAY_OUTPUT_DIR:/tmp/xray-output}
+  
+  nessus:
+    url: ${NESSUS_URL:https://localhost:8834}
+    access:
+      key: ${NESSUS_ACCESS_KEY:}
+    secret:
+      key: ${NESSUS_SECRET_KEY:}
+    username: ${NESSUS_USERNAME:}
+    password: ${NESSUS_PASSWORD:}
+  
+  awvs:
+    url: ${AWVS_URL:https://localhost:3443}
+    api:
+      key: ${AWVS_API_KEY:}
 
 # Swagger Documentation
 springdoc:
@@ -42,3 +87,8 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
+
+# 静态资源配置
+web:
+  resources:
+    static-locations: classpath:/static/

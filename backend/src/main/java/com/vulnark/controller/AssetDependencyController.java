@@ -151,20 +151,7 @@ public class AssetDependencyController {
         }
     }
     
-    @Operation(summary = "获取项目依赖拓扑图", description = "获取指定项目的资产依赖拓扑图")
-    @GetMapping("/topology/project/{projectId}")
-    public ResponseEntity<ApiResponse<AssetDependencyService.AssetDependencyTopology>> getProjectTopology(
-            @Parameter(description = "项目ID") @PathVariable Long projectId) {
-        try {
-            AssetDependencyService.AssetDependencyTopology topology = 
-                    dependencyService.getProjectDependencyTopology(projectId);
-            return ResponseEntity.ok(ApiResponse.success("获取项目依赖拓扑图成功", topology));
-        } catch (Exception e) {
-            logger.error("获取项目依赖拓扑图失败: {}", projectId, e);
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("获取项目依赖拓扑图失败: " + e.getMessage()));
-        }
-    }
+
     
     @Operation(summary = "分析依赖路径", description = "分析两个资产之间的依赖路径")
     @GetMapping("/path/analyze")

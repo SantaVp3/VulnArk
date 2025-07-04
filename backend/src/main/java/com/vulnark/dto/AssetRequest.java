@@ -58,8 +58,7 @@ public class AssetRequest {
     @Schema(description = "重要性等级")
     private Asset.Importance importance;
     
-    @Schema(description = "所属项目ID")
-    private Long projectId;
+
     
     @Schema(description = "负责人ID")
     private Long ownerId;
@@ -187,13 +186,7 @@ public class AssetRequest {
         this.importance = importance;
     }
     
-    public Long getProjectId() {
-        return projectId;
-    }
-    
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
+
     
     public Long getOwnerId() {
         return ownerId;

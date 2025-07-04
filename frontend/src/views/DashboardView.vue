@@ -154,15 +154,7 @@ const stats = ref([
     color: 'linear-gradient(135deg, #3b82f6, #2563eb)',
     icon: IconDesktop
   },
-  {
-    key: 'projects',
-    label: '项目总数',
-    value: '0',
-    change: '0%',
-    changeType: 'increase',
-    color: 'linear-gradient(135deg, #10b981, #059669)',
-    icon: IconScan
-  },
+
   {
     key: 'users',
     label: '用户数量',
@@ -218,8 +210,7 @@ const loadDashboardData = async () => {
     // 更新统计卡片数据
     stats.value[0].value = data.vulnerabilities.total.toLocaleString()
     stats.value[1].value = data.assets.total.toLocaleString()
-    stats.value[2].value = data.projects.total.toLocaleString()
-    stats.value[3].value = data.users.total.toLocaleString()
+    stats.value[2].value = data.users.total.toLocaleString()
     
     return data
   } catch (error) {

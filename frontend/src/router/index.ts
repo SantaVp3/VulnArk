@@ -42,12 +42,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/VulnerabilityView.vue'),
         meta: { title: '漏洞管理' }
       },
-      {
-        path: '/scans',
-        name: 'Scans',
-        component: () => import('@/views/ScanView.vue'),
-        meta: { title: '扫描管理' }
-      },
+
       {
         path: '/users',
         name: 'Users',

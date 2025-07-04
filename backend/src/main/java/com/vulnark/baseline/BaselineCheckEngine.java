@@ -3,17 +3,15 @@ package com.vulnark.baseline;
 import com.vulnark.entity.Asset;
 import com.vulnark.entity.BaselineCheck;
 import com.vulnark.entity.BaselineCheckItem;
+import com.vulnark.security.SecureCommandExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 基线检查引擎
@@ -23,6 +21,9 @@ import java.util.concurrent.TimeUnit;
 public class BaselineCheckEngine {
 
     private static final Logger logger = LoggerFactory.getLogger(BaselineCheckEngine.class);
+
+    @Autowired
+    private SecureCommandExecutor commandExecutor;
 
     /**
      * 执行基线检查
@@ -313,58 +314,55 @@ public class BaselineCheckEngine {
     }
 
     /**
-     * 执行系统命令
+     * 执行系统命令（安全版本）
      */
     private ProcessResult executeCommand(String command, Asset asset) {
         try {
+            logger.info("执行基线检查命令: {} for asset: {}", command, asset.getIpAddress());
+
             // 根据资产类型选择执行方式
             if ("localhost".equals(asset.getIpAddress()) || "127.0.0.1".equals(asset.getIpAddress())) {
-                // 本地执行
-                return executeLocalCommand(command);
+                // 本地执行 - 使用安全的命令执行器
+                return executeLocalCommandSecure(command);
             } else {
-                // 远程执行（通过SSH）
-                return executeRemoteCommand(command, asset);
+                // 远程执行（通过SSH）- 暂时禁用，返回模拟结果
+                logger.warn("远程命令执行已禁用，返回模拟结果: {}", asset.getIpAddress());
+                return new ProcessResult(true, "远程执行已禁用（安全考虑）", "");
             }
         } catch (Exception e) {
+            logger.error("命令执行失败: {}", command, e);
             return new ProcessResult(false, "", e.getMessage());
         }
     }
 
     /**
-     * 执行本地命令
+     * 安全执行本地命令
      */
-    private ProcessResult executeLocalCommand(String command) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
-        pb.redirectErrorStream(true);
-        
-        Process process = pb.start();
-        
-        StringBuilder output = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-        }
-        
-        boolean finished = process.waitFor(30, TimeUnit.SECONDS);
-        if (!finished) {
-            process.destroyForcibly();
-            return new ProcessResult(false, "", "命令执行超时");
-        }
-        
-        int exitCode = process.exitValue();
-        return new ProcessResult(exitCode == 0, output.toString(), "");
+    private ProcessResult executeLocalCommandSecure(String command) {
+        // 使用安全的命令执行器
+        SecureCommandExecutor.CommandResult result = commandExecutor.executeCommand(command, 30);
+
+        return new ProcessResult(
+            result.isSuccess(),
+            result.getOutput(),
+            result.getError()
+        );
     }
 
     /**
-     * 执行远程命令（通过SSH）
+     * 执行远程命令（通过SSH）- 安全版本
+     * 注意：远程命令执行已被禁用以防止安全风险
      */
     private ProcessResult executeRemoteCommand(String command, Asset asset) {
-        // 这里可以集成SSH客户端库（如JSch）来执行远程命令
-        // 为了简化，这里返回模拟结果
-        logger.info("模拟远程执行命令: {} on {}", command, asset.getIpAddress());
-        return new ProcessResult(true, "模拟执行结果", "");
+        // 远程命令执行存在严重安全风险，已被禁用
+        // 如需启用，请确保：
+        // 1. 使用安全的SSH连接
+        // 2. 验证目标主机身份
+        // 3. 使用受限的用户权限
+        // 4. 对命令进行严格的安全检查
+
+        logger.warn("远程命令执行已禁用（安全考虑）: {} on {}", command, asset.getIpAddress());
+        return new ProcessResult(false, "", "远程命令执行已禁用（安全考虑）");
     }
 
     /**

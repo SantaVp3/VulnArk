@@ -22,10 +22,22 @@ pnpm-debug.log*
 
 # Local environment files
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Security sensitive files
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+secrets/
+credentials/
+config/secrets/
 
 # Package files
 *.jar

@@ -1,29 +1,36 @@
 package com.vulnark.security;
 
+import com.vulnark.config.JwtConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-    
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
+
+    @Autowired
+    private JwtConfig jwtConfig;
     
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        String secret = jwtConfig.getJwtSecret();
+        try {
+            // 尝试作为Base64解码
+            byte[] keyBytes = Base64.getDecoder().decode(secret);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (IllegalArgumentException e) {
+            // 如果不是Base64，直接使用字符串字节
+            return Keys.hmacShaKeyFor(secret.getBytes());
+        }
     }
     
     public String generateToken(String username) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+        Date expiryDate = new Date(now.getTime() + jwtConfig.getJwtExpiration());
         
         return Jwts.builder()
                 .setSubject(username)

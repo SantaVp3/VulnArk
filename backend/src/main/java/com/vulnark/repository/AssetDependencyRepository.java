@@ -50,14 +50,7 @@ public interface AssetDependencyRepository extends JpaRepository<AssetDependency
     @Query("SELECT ad FROM AssetDependency ad WHERE (ad.sourceAssetId = :assetId OR ad.targetAssetId = :assetId) AND ad.deleted = false")
     List<AssetDependency> findByAssetId(@Param("assetId") Long assetId);
     
-    /**
-     * 查找指定项目的所有资产依赖关系
-     */
-    @Query("SELECT ad FROM AssetDependency ad " +
-           "JOIN Asset sa ON ad.sourceAssetId = sa.id " +
-           "JOIN Asset ta ON ad.targetAssetId = ta.id " +
-           "WHERE sa.projectId = :projectId AND ta.projectId = :projectId AND ad.deleted = false")
-    List<AssetDependency> findByProjectId(@Param("projectId") Long projectId);
+
     
     /**
      * 检查两个资产之间是否存在依赖关系
