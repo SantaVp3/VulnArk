@@ -86,24 +86,299 @@ VulnArk 是一个漏洞管理和安全扫描平台，提供资产管理、漏洞
 
 ## 环境要求
 
-- Docker 20.10+
-- Docker Compose 2.0+
+- **Java**: JDK 17 或更高版本
+- **Node.js**: 16.x 或更高版本  
+- **MySQL**: 8.0 或更高版本
+- **Maven**: 3.6 或更高版本
+- **操作系统**: Linux、Windows、macOS
 
-## 🚀 一键部署（推荐）
+## 🚀 部署方式
 
-### 快速启动
+### 手动部署
 
+**适用场景**：开发调试、生产环境、自定义配置
+
+#### 环境要求
+- **Java**: JDK 17 或更高版本
+- **Node.js**: 16.x 或更高版本  
+- **MySQL**: 8.0 或更高版本
+- **Maven**: 3.6 或更高版本
+- **操作系统**: Linux、Windows、macOS
+
+#### 1. 环境检查
+```bash
+# 检查Java版本
+java -version
+
+# 检查Node.js版本
+node -v
+npm -v
+
+# 检查Maven版本
+mvn -v
+
+# 检查MySQL版本
+mysql --version
+```
+
+#### 2. 数据库配置
+```bash
+# 连接MySQL
+mysql -u root -p
+
+# 创建数据库和用户
+CREATE DATABASE vulnark DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'vulnark'@'%' IDENTIFIED BY 'vulnark123';
+GRANT ALL PRIVILEGES ON vulnark.* TO 'vulnark'@'%';
+FLUSH PRIVILEGES;
+
+# 导入初始数据
+USE vulnark;
+SOURCE /path/to/vulnark+/backend/src/main/resources/db/vulnark_complete.sql;
+```
+
+#### 3. 后端部署
 ```bash
 # 克隆项目
 git clone https://github.com/SantaVp3/VulnArk.git
-cd VulnArk
+cd VulnArk/backend
 
-# 一键启动
-./start.sh
+# 配置数据库连接（编辑application-production.yml）
+vim src/main/resources/application-production.yml
+
+# 编译打包
+mvn clean compile
+mvn package -DskipTests
+
+# 启动后端服务
+java -jar target/vulnark-backend-1.0.0.jar --spring.profiles.active=production
+
+# 或者使用Maven运行（开发模式）
+mvn spring-boot:run -Dspring-boot.run.profiles=production
 ```
 
-启动完成后访问：
-- **前端界面**：http://localhost
+#### 4. 前端部署
+```bash
+# 进入前端目录
+cd ../frontend
+
+# 安装依赖
+npm install
+
+# 开发模式运行
+npm run dev
+
+# 生产构建
+npm run build
+
+# 使用 serve 提供静态文件服务
+npm install -g serve
+serve -s dist -l 80
+```
+
+#### 5. Nginx 部署（生产环境推荐）
+```bash
+# 安装Nginx（Ubuntu/Debian）
+sudo apt update
+sudo apt install nginx
+
+# 或者安装Nginx（CentOS/RHEL）
+sudo yum install nginx
+# 或者（较新版本）
+sudo dnf install nginx
+
+# 配置Nginx
+sudo vim /etc/nginx/sites-available/vulnark
+```
+
+Nginx 配置文件内容：
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # 替换为你的域名或IP
+    root /path/to/vulnark+/frontend/dist;
+    index index.html;
+
+    # 前端静态文件
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 后端API代理
+    location /api/ {
+        proxy_pass http://localhost:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # 处理长连接
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+
+    # 静态资源缓存
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+启用配置：
+```bash
+# Ubuntu/Debian
+sudo ln -s /etc/nginx/sites-available/vulnark /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+# CentOS/RHEL（配置文件路径可能不同）
+sudo cp /etc/nginx/sites-available/vulnark /etc/nginx/conf.d/vulnark.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### 6. 系统服务配置（可选）
+
+**后端服务** (`/etc/systemd/system/vulnark-backend.service`)：
+```ini
+[Unit]
+Description=VulnArk Backend Service
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=vulnark
+WorkingDirectory=/opt/vulnark/backend
+ExecStart=/usr/bin/java -jar vulnark-backend-1.0.0.jar --spring.profiles.active=production
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+启动服务：
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable vulnark-backend
+sudo systemctl start vulnark-backend
+sudo systemctl status vulnark-backend
+```
+
+**前端服务** (`/etc/systemd/system/vulnark-frontend.service`)：
+```ini
+[Unit]
+Description=VulnArk Frontend Service
+After=network.target
+
+[Service]
+Type=simple
+User=vulnark
+WorkingDirectory=/opt/vulnark/frontend
+ExecStart=/usr/local/bin/serve -s dist -l 3000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### 7. 常用管理命令
+```bash
+# 查看后端服务状态
+sudo systemctl status vulnark-backend
+
+# 查看前端服务状态
+sudo systemctl status vulnark-frontend
+
+# 重启服务
+sudo systemctl restart vulnark-backend
+sudo systemctl restart vulnark-frontend
+
+# 查看日志
+sudo journalctl -u vulnark-backend -f
+sudo journalctl -u vulnark-frontend -f
+
+# 更新代码
+cd /opt/vulnark
+git pull
+cd backend && mvn package -DskipTests
+cd ../frontend && npm run build
+sudo systemctl restart vulnark-backend vulnark-frontend
+```
+
+### Agent 客户端部署
+
+#### 1. 编译 Agent
+```bash
+cd agent
+
+# 编译当前平台
+go build -o vulnark-agent .
+
+# 交叉编译 Linux
+GOOS=linux GOARCH=amd64 go build -o vulnark-agent-linux .
+
+# 交叉编译 Windows
+GOOS=windows GOARCH=amd64 go build -o vulnark-agent.exe .
+```
+
+#### 2. 配置 Agent
+```bash
+# 创建配置文件
+cat > config.yaml << 'EOF'
+server:
+  host: "your-server-ip"
+  port: 8080
+  protocol: "http"
+
+agent:
+  name: "agent-001"
+  heartbeat_interval: 30s
+  max_retries: 3
+
+logging:
+  level: "info"
+  file: "vulnark-agent.log"
+EOF
+```
+
+#### 3. 运行 Agent
+```bash
+# 前台运行
+./vulnark-agent
+
+# 后台运行
+nohup ./vulnark-agent > agent.log 2>&1 &
+
+# 系统服务方式运行（Linux）
+sudo cp vulnark-agent /usr/local/bin/
+sudo vim /etc/systemd/system/vulnark-agent.service
+```
+
+Agent 系统服务配置：
+```ini
+[Unit]
+Description=VulnArk Agent Service
+After=network.target
+
+[Service]
+Type=simple
+User=vulnark-agent
+WorkingDirectory=/opt/vulnark-agent
+ExecStart=/usr/local/bin/vulnark-agent
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## 访问信息
+
+部署完成后访问：
+- **前端界面**：http://localhost 或 http://your-domain.com
 - **后端API**：http://localhost:8080/api
 - **API文档**：http://localhost:8080/api/swagger-ui.html
 
@@ -112,52 +387,6 @@ cd VulnArk
 ```
 用户名：admin
 密码：password123
-```
-
-### 常用命令
-
-```bash
-# 查看服务状态
-docker compose ps
-# 或者（旧版本）
-docker-compose ps
-
-# 查看日志
-docker compose logs -f
-
-# 停止服务
-docker compose down
-
-# 重启服务
-docker compose restart
-
-# 清理数据（谨慎使用）
-docker compose down -v
-```
-
-## 📦 手动部署
-
-### 环境要求
-- Java 17+
-- Node.js 16+
-- MySQL 8.0+
-- Maven 3.6+
-
-### 后端部署
-
-```bash
-cd backend
-mvn clean package -DskipTests
-java -jar target/vulnark-backend-1.0.0.jar
-```
-
-### 前端部署
-
-```bash
-cd frontend
-npm install
-npm run build
-# 使用nginx或其他web服务器托管dist目录
 ```
 
 ## 🔒 安全注意事项
