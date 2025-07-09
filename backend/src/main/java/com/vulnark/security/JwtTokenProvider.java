@@ -1,36 +1,29 @@
 package com.vulnark.security;
 
-import com.vulnark.config.JwtConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
 
-    @Autowired
-    private JwtConfig jwtConfig;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
     
     private SecretKey getSigningKey() {
-        String secret = jwtConfig.getJwtSecret();
-        try {
-            // 尝试作为Base64解码
-            byte[] keyBytes = Base64.getDecoder().decode(secret);
-            return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException e) {
-            // 如果不是Base64，直接使用字符串字节
-            return Keys.hmacShaKeyFor(secret.getBytes());
-        }
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
     
     public String generateToken(String username) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtConfig.getJwtExpiration());
+        Date expiryDate = new Date(now.getTime() + jwtExpiration);
         
         return Jwts.builder()
                 .setSubject(username)
@@ -69,10 +62,53 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            
+
             return claims.getExpiration().before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return true;
+        }
+    }
+
+    // Agent Token相关方法
+    public String generateAgentToken(String agentId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpiration * 10); // Agent Token有效期更长
+
+        return Jwts.builder()
+                .setSubject(agentId)
+                .claim("type", "agent")
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public String getAgentIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        // 验证是否为Agent Token
+        if (!"agent".equals(claims.get("type"))) {
+            throw new JwtException("Invalid agent token");
+        }
+
+        return claims.getSubject();
+    }
+
+    public boolean isAgentToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return "agent".equals(claims.get("type"));
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
         }
     }
 }

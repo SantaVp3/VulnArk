@@ -39,4 +39,4 @@ export const scanLogApi = {
   exportScanLogs: (taskId: number, params: ScanLogQueryParams = {}) => {
     return request.get(`/scan-logs/${taskId}/export`, { params, responseType: 'blob' })
   }
-} 
+}

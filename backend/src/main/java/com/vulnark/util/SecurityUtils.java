@@ -15,20 +15,26 @@ public class SecurityUtils {
     public static Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return 1L; // 默认用户ID
+        if (authentication == null || !authentication.isAuthenticated() || 
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new SecurityException("用户未认证，无法获取用户ID");
+        }
+
+        // 处理User实体认证（从JwtAuthenticationFilter设置）
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.vulnark.entity.User) {
+            com.vulnark.entity.User user = (com.vulnark.entity.User) principal;
+            return user.getId();
         }
 
         // 处理UserDetails认证
-        Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) principal;
             String username = userDetails.getUsername();
             try {
                 return Long.parseLong(username);
             } catch (NumberFormatException e) {
-                // 如果用户名不是数字，返回默认值
-                return 1L; // 默认用户ID
+                throw new SecurityException("无法解析用户ID: " + username);
             }
         }
 
@@ -37,12 +43,11 @@ public class SecurityUtils {
             try {
                 return Long.parseLong((String) principal);
             } catch (NumberFormatException e) {
-                // 忽略解析错误
+                throw new SecurityException("无法解析用户ID: " + principal);
             }
         }
 
-        // 默认返回1L（用于开发测试）
-        return 1L;
+        throw new SecurityException("无法获取当前用户ID，未知的认证类型");
     }
 
     /**
@@ -51,12 +56,19 @@ public class SecurityUtils {
     public static String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "admin"; // 默认用户名
+        if (authentication == null || !authentication.isAuthenticated() || 
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new SecurityException("用户未认证，无法获取用户名");
+        }
+
+        // 处理User实体认证（从JwtAuthenticationFilter设置）
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.vulnark.entity.User) {
+            com.vulnark.entity.User user = (com.vulnark.entity.User) principal;
+            return user.getUsername();
         }
 
         // 处理UserDetails认证
-        Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails) {
             return ((UserDetails) principal).getUsername();
         }
@@ -66,7 +78,12 @@ public class SecurityUtils {
             return (String) principal;
         }
 
-        return authentication.getName() != null ? authentication.getName() : "admin";
+        String name = authentication.getName();
+        if (name != null && !"anonymousUser".equals(name)) {
+            return name;
+        }
+
+        throw new SecurityException("无法获取当前用户名");
     }
 
     /**

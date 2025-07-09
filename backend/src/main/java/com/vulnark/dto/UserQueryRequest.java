@@ -21,12 +21,6 @@ public class UserQueryRequest {
     @Schema(description = "状态")
     private User.Status status;
     
-    @Schema(description = "部门关键词")
-    private String department;
-    
-    @Schema(description = "职位关键词")
-    private String position;
-    
     @Schema(description = "搜索关键词")
     private String keyword;
     
@@ -84,22 +78,6 @@ public class UserQueryRequest {
     
     public void setStatus(User.Status status) {
         this.status = status;
-    }
-    
-    public String getDepartment() {
-        return department;
-    }
-    
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-    
-    public String getPosition() {
-        return position;
-    }
-    
-    public void setPosition(String position) {
-        this.position = position;
     }
     
     public String getKeyword() {

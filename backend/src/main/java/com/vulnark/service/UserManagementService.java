@@ -131,8 +131,6 @@ public class UserManagementService {
                 request.getFullName(),
                 request.getRole(),
                 request.getStatus(),
-                request.getDepartment(),
-                request.getPosition(),
                 pageable
         );
     }
@@ -156,13 +154,6 @@ public class UserManagementService {
      */
     public List<User> getUsersByStatus(User.Status status) {
         return userRepository.findByStatusAndDeletedFalse(status);
-    }
-    
-    /**
-     * 根据部门获取用户
-     */
-    public List<User> getUsersByDepartment(String department) {
-        return userRepository.findByDepartmentAndDeletedFalse(department);
     }
     
     /**

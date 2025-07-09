@@ -17,7 +17,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "认证管理", description = "用户认证相关接口")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     
     @Autowired

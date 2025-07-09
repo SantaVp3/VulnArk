@@ -1,8 +1,10 @@
 // 用户角色枚举
 export enum UserRole {
   ADMIN = 'ADMIN',
+  MANAGER = 'MANAGER',
   ANALYST = 'ANALYST', 
-  VIEWER = 'VIEWER'
+  VIEWER = 'VIEWER',
+  USER = 'USER'
 }
 
 // 用户状态枚举

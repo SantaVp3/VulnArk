@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 /**
  * 资产发现控制器
  */
+@Tag(name = "资产发现", description = "资产发现相关接口")
 @RestController
-@RequestMapping("/asset-discovery")
-@Tag(name = "资产发现管理", description = "资产自动发现和指纹识别功能")
+@RequestMapping("/api/asset-discovery")
 public class AssetDiscoveryController {
 
     private static final Logger logger = LoggerFactory.getLogger(AssetDiscoveryController.class);

@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.*;
 import javax.security.cert.CertificateException;
+import com.vulnark.security.SecureHttpClientFactory;
 
 @Service
 public class AssetDetectionEngine {
@@ -28,6 +29,9 @@ public class AssetDetectionEngine {
     
     @Autowired
     private AssetDetectionRepository detectionRepository;
+    
+    @Autowired
+    private SecureHttpClientFactory httpClientFactory;
     
     // 默认超时时间（毫秒）
     private static final int DEFAULT_TIMEOUT = 5000;
@@ -368,25 +372,8 @@ public class AssetDetectionEngine {
         try {
             String url = String.format("https://%s:%d", target, port);
 
-            // 创建信任所有证书的SSL上下文
-            TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return null; }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) { }
-                }
-            };
-
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-
-            HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(TCP_TIMEOUT);
-            connection.setReadTimeout(TCP_TIMEOUT);
-            connection.setRequestProperty("User-Agent", "VulnArk-Scanner/1.0");
+            // 使用安全的HTTP客户端工厂创建连接
+            HttpURLConnection connection = httpClientFactory.createSecureConnection(url, "VulnArk-Scanner/1.0");
 
             long startTime = System.currentTimeMillis();
             int responseCode = connection.getResponseCode();
@@ -396,21 +383,35 @@ public class AssetDetectionEngine {
             detection.setHttpStatusCode(responseCode);
 
             // 获取SSL证书信息
-            try {
-                Certificate[] certs = connection.getServerCertificates();
-                if (certs.length > 0 && certs[0] instanceof X509Certificate) {
-                    X509Certificate cert = (X509Certificate) certs[0];
-                    detection.setDetails(String.format("HTTPS服务正常，证书主题: %s",
-                                                      cert.getSubjectDN().getName()));
+            if (connection instanceof HttpsURLConnection) {
+                HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+                String certInfo = httpClientFactory.getCertificateInfo(httpsConnection);
+                
+                if (responseCode >= 200 && responseCode < 400) {
+                    detection.markAsCompleted(AssetDetection.DetectionResult.ONLINE);
+                    detection.setDetails(String.format("HTTPS服务正常，状态码: %d，响应时间: %dms\n%s",
+                                                      responseCode, responseTime, certInfo));
+                } else {
+                    detection.markAsCompleted(AssetDetection.DetectionResult.ONLINE);
+                    detection.setDetails(String.format("HTTPS服务响应异常，状态码: %d\n%s", responseCode, certInfo));
                 }
-            } catch (Exception e) {
-                logger.debug("获取SSL证书信息失败", e);
+            } else {
+                detection.markAsCompleted(AssetDetection.DetectionResult.ONLINE);
+                detection.setDetails(String.format("HTTPS服务正常，状态码: %d，响应时间: %dms", responseCode, responseTime));
             }
 
-            detection.markAsCompleted(AssetDetection.DetectionResult.ONLINE);
-
+        } catch (SocketTimeoutException e) {
+            detection.markAsTimeout();
+            detection.setDetails("HTTPS连接超时");
+        } catch (ConnectException e) {
+            detection.markAsCompleted(AssetDetection.DetectionResult.OFFLINE);
+            detection.setDetails("HTTPS服务不可用");
+        } catch (SSLException e) {
+            detection.markAsFailed("SSL连接失败: " + e.getMessage());
+            logger.warn("SSL连接失败 - 目标: {}:{}, 错误: {}", target, port, e.getMessage());
         } catch (Exception e) {
             detection.markAsFailed("HTTPS检测失败: " + e.getMessage());
+            logger.error("HTTPS检测失败", e);
         }
 
         return detectionRepository.save(detection);

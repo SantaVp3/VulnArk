@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="shieldGradientApple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1F2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="180" height="180" fill="url(#bgGradient)" rx="40"/>
+  
+  <!-- Main shield -->
+  <path d="M90 30 L135 45 L135 90 C135 123 90 150 90 150 C90 150 45 123 45 90 L45 45 Z" 
+        fill="url(#shieldGradientApple)" 
+        stroke="#E5E7EB" 
+        stroke-width="2"/>
+  
+  <!-- Lock body -->
+  <rect x="75" y="85" width="30" height="30" rx="5" fill="#FFFFFF" opacity="0.95"/>
+  
+  <!-- Lock shackle -->
+  <path d="M80 85 L80 75 C80 66.7 86.7 60 95 60 C103.3 60 110 66.7 110 75 L110 85" 
+        stroke="#1F2937" 
+        stroke-width="6" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <!-- Lock keyhole -->
+  <circle cx="90" cy="95" r="3" fill="#1F2937"/>
+  <rect x="88.5" y="95" width="3" height="8" fill="#1F2937"/>
+  
+  <!-- Warning indicator -->
+  <circle cx="125" cy="55" r="15" fill="#EF4444"/>
+  <text x="125" y="63" text-anchor="middle" fill="white" font-size="18" font-weight="bold">!</text>
+  
+  <!-- Subtle glow effect -->
+  <path d="M90 30 L135 45 L135 90 C135 123 90 150 90 150 C90 150 45 123 45 90 L45 45 Z" 
+        fill="none" 
+        stroke="#8B5CF6" 
+        stroke-width="1" 
+        opacity="0.3"/>
+</svg>

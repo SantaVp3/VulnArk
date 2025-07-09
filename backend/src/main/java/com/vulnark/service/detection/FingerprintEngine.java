@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.vulnark.security.SecureHttpClientFactory;
 
 @Service
 public class FingerprintEngine {
@@ -27,6 +28,9 @@ public class FingerprintEngine {
     
     @Autowired
     private AssetFingerprintRepository fingerprintRepository;
+    
+    @Autowired
+    private SecureHttpClientFactory httpClientFactory;
     
     // 指纹识别规则
     private static final Map<String, FingerprintRule> FINGERPRINT_RULES = new HashMap<>();
@@ -342,27 +346,12 @@ public class FingerprintEngine {
      * 创建HTTP连接
      */
     private HttpURLConnection createHttpConnection(String url, boolean isHttps) throws Exception {
-        if (isHttps) {
-            // 创建信任所有证书的SSL上下文
-            TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return null; }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) { }
-                }
-            };
-
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        }
-
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
+        // 使用安全的HTTP客户端工厂创建连接
+        HttpURLConnection connection = httpClientFactory.createSecureConnection(url, "VulnArk-Scanner/1.0");
+        
+        // 设置指纹识别特定的属性
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(5000);
-        connection.setRequestProperty("User-Agent", "VulnArk-Scanner/1.0");
         connection.setInstanceFollowRedirects(false); // 不自动跟随重定向
 
         return connection;

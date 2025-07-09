@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Tag(name = "资产检测", description = "资产在线状态检测和指纹识别相关接口")
+@Tag(name = "资产检测", description = "资产检测相关接口")
 @RestController
-@RequestMapping("/asset-detection")
+@RequestMapping("/api/asset-detection")
 public class AssetDetectionController {
     
     @Autowired

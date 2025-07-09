@@ -94,8 +94,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     
     // 获取需要扫描的资产
     @Query("SELECT a FROM Asset a WHERE a.deleted = false " +
-           "AND a.status = 'ACTIVE' " +
-           "AND (a.lastScanTime IS NULL OR a.lastScanTime < :beforeTime)")
+           "AND a.status = 'ACTIVE'")
     List<Asset> findAssetsNeedingScan(@Param("beforeTime") LocalDateTime beforeTime);
     
     // 获取活跃资产

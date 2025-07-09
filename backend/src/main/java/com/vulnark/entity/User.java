@@ -52,18 +52,6 @@ public class User {
     @Column(nullable = false)
     private Status status = Status.ACTIVE;
 
-    @Schema(description = "部门")
-    @Column(length = 100)
-    private String department;
-
-    @Schema(description = "职位")
-    @Column(length = 100)
-    private String position;
-
-    @Schema(description = "备注")
-    @Column(columnDefinition = "TEXT")
-    private String notes;
-
     @Schema(description = "最后登录时间")
     private LocalDateTime lastLoginTime;
 
@@ -178,30 +166,6 @@ public class User {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
     }
     
     public LocalDateTime getLastLoginTime() {

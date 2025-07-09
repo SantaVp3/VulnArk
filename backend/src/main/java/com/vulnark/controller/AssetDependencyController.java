@@ -23,9 +23,9 @@ import java.util.List;
 /**
  * 资产依赖关系控制器
  */
+@Tag(name = "资产依赖", description = "资产依赖关系管理相关接口")
 @RestController
-@RequestMapping("/asset-dependencies")
-@Tag(name = "资产依赖关系管理", description = "资产依赖关系的增删改查和拓扑图功能")
+@RequestMapping("/api/asset-dependencies")
 public class AssetDependencyController {
     
     private static final Logger logger = LoggerFactory.getLogger(AssetDependencyController.class);

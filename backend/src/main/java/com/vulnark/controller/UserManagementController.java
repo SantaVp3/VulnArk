@@ -16,10 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import com.vulnark.util.SecurityUtils;
 
 @Tag(name = "用户管理", description = "用户管理相关接口")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserManagementController {
     
@@ -64,10 +65,26 @@ public class UserManagementController {
     
     @Operation(summary = "根据ID获取用户详情")
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")  // 允许所有已认证用户访问
     public ApiResponse<User> getUserById(
             @Parameter(description = "用户ID") @PathVariable Long id) {
         try {
             User user = userManagementService.getUserById(id);
+            
+            // 如果当前用户不是管理员或经理，只返回基本信息
+            if (!SecurityUtils.hasRole("ADMIN") && !SecurityUtils.hasRole("MANAGER")) {
+                // 清除敏感信息
+                user.setEmail(null);
+                user.setPhone(null);
+                // 移除不存在的方法调用
+                // user.setDepartment(null);
+                // user.setPosition(null);
+                // user.setNotes(null);
+                user.setCreatedTime(null);
+                user.setUpdatedTime(null);
+                user.setLastLoginTime(null);
+            }
+            
             return ApiResponse.success("获取用户详情成功", user);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
@@ -82,8 +99,6 @@ public class UserManagementController {
             @Parameter(description = "全名关键词") @RequestParam(required = false) String fullName,
             @Parameter(description = "角色") @RequestParam(required = false) User.Role role,
             @Parameter(description = "状态") @RequestParam(required = false) User.Status status,
-            @Parameter(description = "部门关键词") @RequestParam(required = false) String department,
-            @Parameter(description = "职位关键词") @RequestParam(required = false) String position,
             @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
             @Parameter(description = "页码") @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size,
@@ -96,8 +111,6 @@ public class UserManagementController {
             request.setFullName(fullName);
             request.setRole(role);
             request.setStatus(status);
-            request.setDepartment(department);
-            request.setPosition(position);
             request.setKeyword(keyword);
             request.setPage(page);
             request.setSize(size);
@@ -141,18 +154,6 @@ public class UserManagementController {
         try {
             List<User> users = userManagementService.getUsersByStatus(status);
             return ApiResponse.success("获取状态用户成功", users);
-        } catch (Exception e) {
-            return ApiResponse.error(e.getMessage());
-        }
-    }
-    
-    @Operation(summary = "根据部门获取用户")
-    @GetMapping("/department/{department}")
-    public ApiResponse<List<User>> getUsersByDepartment(
-            @Parameter(description = "部门") @PathVariable String department) {
-        try {
-            List<User> users = userManagementService.getUsersByDepartment(department);
-            return ApiResponse.success("获取部门用户成功", users);
         } catch (Exception e) {
             return ApiResponse.error(e.getMessage());
         }

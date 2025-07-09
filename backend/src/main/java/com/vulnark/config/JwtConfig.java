@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-@Configuration
+@Configuration  // 启用JWT安全验证
 public class JwtConfig {
     
     @Value("${jwt.secret}")

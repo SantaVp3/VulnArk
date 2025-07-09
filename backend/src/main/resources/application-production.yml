@@ -1,0 +1,225 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  # 生产环境安全配置
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+spring:
+  application:
+    name: vulnark-backend
+  
+  # 阿里云MySQL生产环境数据源配置
+  datasource:
+    url: jdbc:mysql://${DB_HOST:rm-bp12rmv4rgp0p70k2lo.mysql.rds.aliyuncs.com}:${DB_PORT:3306}/${DB_NAME:vulnark}?useUnicode=true&characterEncoding=utf8&useSSL=true&requireSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&rewriteBatchedStatements=true
+    username: ${DB_USERNAME:vulnark_user}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+      connection-test-query: SELECT 1
+      connection-init-sql: SET SESSION sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 生产环境验证schema一致性
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        generate_statistics: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: true
+    open-in-view: false
+
+  # SQL初始化配置 - 生产环境建议手动执行
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:db/vulnark_complete.sql
+      continue-on-error: false
+      encoding: utf-8
+
+  # Redis配置 - 生产环境
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD}
+    timeout: 2000ms
+    database: ${REDIS_DATABASE:0}
+    lettuce:
+      pool:
+        max-active: 16
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 2
+      shutdown-timeout: 100ms
+
+  # RabbitMQ配置 - 生产环境
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:vulnark_user}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:vulnark}
+    connection-timeout: 60000
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 5
+          multiplier: 2.0
+          max-interval: 30000
+        acknowledge-mode: auto
+        concurrency: 2
+        max-concurrency: 8
+        prefetch: 10
+    template:
+      mandatory: true
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+
+  # 任务调度配置 - 生产环境
+  task:
+    scheduling:
+      pool:
+        size: 10
+    execution:
+      pool:
+        core-size: 10
+        max-size: 20
+        queue-capacity: 1000
+        keep-alive: 60s
+        thread-name-prefix: vulnark-task-
+  
+  # 静态资源配置
+  web:
+    resources:
+      add-mappings: false  # 禁用Spring Boot默认的静态资源映射
+  mvc:
+    static-path-pattern: /static/**  # 限制静态资源路径模式
+
+# JWT 安全配置
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# 生产环境日志配置
+logging:
+  level:
+    root: WARN
+    com.vulnark: ${LOG_LEVEL:INFO}
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: ${LOG_FILE_PATH:/opt/vulnark/logs/vulnark.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+# VulnArk 应用配置
+vulnark:
+  # 文件存储配置
+  storage:
+    upload-path: ${VULNARK_UPLOAD_PATH:/opt/vulnark/uploads}
+    max-file-size: ${MAX_FILE_SIZE:10MB}
+    allowed-extensions: pdf,doc,docx,txt,png,jpg,jpeg,gif,xml,json,csv
+  
+  # 扫描工具配置
+  tools:
+    base-path: ${VULNARK_TOOLS_BASE_PATH:/opt/vulnark/tools}
+    download-timeout: 300000
+    auto-update: ${TOOLS_AUTO_UPDATE:false}
+  
+  # 扫描结果存储
+  scan:
+    results-path: ${VULNARK_SCAN_RESULTS_PATH:/opt/vulnark/scan-results}
+    keep-raw-results: ${KEEP_RAW_RESULTS:true}
+    max-concurrent-scans: ${MAX_CONCURRENT_SCANS:3}
+  
+  # 安全配置
+  security:
+    password-min-length: 8
+    session-timeout: 1800
+    max-login-attempts: 5
+    account-lockout-duration: 300
+  
+  # 系统监控
+  monitoring:
+    enabled: ${MONITORING_ENABLED:true}
+    metrics-interval: 60
+
+# 扫描引擎配置
+scan:
+  # 通用扫描配置
+  general:
+    max-parallel-tasks: ${MAX_PARALLEL_SCANS:3}
+    default-timeout: ${DEFAULT_SCAN_TIMEOUT:1800}
+    result-retention-days: ${RESULT_RETENTION_DAYS:30}
+
+  nuclei:
+    path: ${NUCLEI_PATH:/usr/local/bin/nuclei}
+    templates:
+      path: ${NUCLEI_TEMPLATES_PATH:/opt/nuclei-templates}
+    output:
+      dir: ${NUCLEI_OUTPUT_DIR:/opt/vulnark/scan-results/nuclei}
+  
+  xray:
+    path: ${XRAY_PATH:/usr/local/bin/xray}
+    output:
+      dir: ${XRAY_OUTPUT_DIR:/opt/vulnark/scan-results/xray}
+  
+  nessus:
+    url: ${NESSUS_URL:}
+    access:
+      key: ${NESSUS_ACCESS_KEY:}
+    secret:
+      key: ${NESSUS_SECRET_KEY:}
+    username: ${NESSUS_USERNAME:}
+    password: ${NESSUS_PASSWORD:}
+  
+  awvs:
+    url: ${AWVS_URL:}
+    api:
+      key: ${AWVS_API_KEY:}
+
+# 生产环境不启用Swagger
+springdoc:
+  api-docs:
+    enabled: ${ENABLE_SWAGGER:false}
+  swagger-ui:
+    enabled: ${ENABLE_SWAGGER:false}
+
+# 生产环境监控配置
+management:
+  endpoints:
+    enabled-by-default: ${MANAGEMENT_ENDPOINTS_ENABLED:false}
+    web:
+      exposure:
+        include: ${ACTUATOR_HEALTH_ENABLED:health}
+  endpoint:
+    health:
+      enabled: ${ACTUATOR_HEALTH_ENABLED:true}
+      show-details: never
+  security:
+    enabled: true 

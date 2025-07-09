@@ -39,35 +39,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 根据状态查找用户
     List<User> findByStatusAndDeletedFalse(User.Status status);
 
-    // 根据部门查找用户
-    List<User> findByDepartmentAndDeletedFalse(String department);
-
     // 复合查询：根据多个条件查找用户
     @Query("SELECT u FROM User u WHERE u.deleted = false " +
            "AND (:username IS NULL OR u.username LIKE %:username%) " +
            "AND (:email IS NULL OR u.email LIKE %:email%) " +
            "AND (:fullName IS NULL OR u.fullName LIKE %:fullName%) " +
            "AND (:role IS NULL OR u.role = :role) " +
-           "AND (:status IS NULL OR u.status = :status) " +
-           "AND (:department IS NULL OR u.department LIKE %:department%) " +
-           "AND (:position IS NULL OR u.position LIKE %:position%)")
+           "AND (:status IS NULL OR u.status = :status)")
     Page<User> findByConditions(
             @Param("username") String username,
             @Param("email") String email,
             @Param("fullName") String fullName,
             @Param("role") User.Role role,
             @Param("status") User.Status status,
-            @Param("department") String department,
-            @Param("position") String position,
             Pageable pageable);
 
     // 全文搜索
     @Query("SELECT u FROM User u WHERE u.deleted = false " +
            "AND (u.username LIKE %:keyword% " +
            "OR u.email LIKE %:keyword% " +
-           "OR u.fullName LIKE %:keyword% " +
-           "OR u.department LIKE %:keyword% " +
-           "OR u.position LIKE %:keyword%)")
+           "OR u.fullName LIKE %:keyword%)")
     Page<User> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     // 统计查询
@@ -86,9 +77,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u.status, COUNT(u) FROM User u WHERE u.deleted = false GROUP BY u.status")
     List<Object[]> getUserStatusStatistics();
-
-    @Query("SELECT u.department, COUNT(u) FROM User u WHERE u.deleted = false AND u.department IS NOT NULL GROUP BY u.department")
-    List<Object[]> getUserDepartmentStatistics();
 
     // 仪表盘相关查询
     // 兼容旧的查询方法（保留以防有其他地方使用）

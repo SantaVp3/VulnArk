@@ -136,29 +136,10 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item 
-              field="department" 
-              label="部门"
+              field="notes" 
+              label="部门/职位"
             >
-              <a-input v-model="formData.department" placeholder="请输入部门" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item 
-              field="position" 
-              label="职位"
-            >
-              <a-input v-model="formData.position" placeholder="请输入职位" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item 
-              field="phone" 
-              label="电话"
-            >
-              <a-input v-model="formData.phone" placeholder="请输入电话" />
+              <a-input v-model="formData.notes" placeholder="请输入部门/职位" />
             </a-form-item>
           </a-col>
           <a-col :span="12">
@@ -175,14 +156,25 @@
           </a-col>
         </a-row>
 
-        <a-form-item 
-          v-if="!isEditing"
-          field="password" 
-          label="密码"
-          :rules="[{ required: true, message: '请输入密码' }, { minLength: 6, message: '密码长度至少6位' }]"
-        >
-          <a-input-password v-model="formData.password" placeholder="请输入密码" />
-        </a-form-item>
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item 
+              field="phone" 
+              label="电话"
+            >
+              <a-input v-model="formData.phone" placeholder="请输入电话" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item 
+              field="password" 
+              label="密码"
+              :rules="[{ required: true, message: '请输入密码' }, { minLength: 6, message: '密码长度至少6位' }]"
+            >
+              <a-input-password v-model="formData.password" placeholder="请输入密码" />
+            </a-form-item>
+          </a-col>
+        </a-row>
       </a-form>
     </a-modal>
 
@@ -242,10 +234,9 @@ const formData = reactive<UserRequest>({
   fullName: '',
   role: 'VIEWER',
   status: 'ACTIVE',
-  department: '',
-  position: '',
   phone: '',
-  password: ''
+  password: '',
+  notes: '' // 替换department和position为notes
 })
 
 const passwordFormData = reactive({
@@ -260,25 +251,59 @@ const formRef = ref()
 const loadUsers = async () => {
   try {
     loading.value = true
-    
+
     // 首先尝试获取所有用户
-    const userData = await userApi.getAllUsers()
-    
-    if (Array.isArray(userData)) {
+    const response = await userApi.getAllUsers()
+    let userData = []
+
+    // 处理不同的响应格式
+    if (response && response.data) {
+      if (response.data.code === 200) {
+        userData = response.data.data || []
+      } else {
+        userData = response.data || []
+      }
+    } else if (Array.isArray(response)) {
+      userData = response
+    } else {
+      userData = []
+    }
+
+    if (Array.isArray(userData) && userData.length > 0) {
       users.value = userData
-      Message.success(`成功加载 ${userData.length} 个用户`)
+      console.log(`成功加载 ${userData.length} 个用户`)
     } else {
       // 如果getAllUsers返回格式不对，尝试分页查询
-      const fallbackData = await userApi.getUsers({ page: 0, size: 100 })
-      
-      if (fallbackData && fallbackData.content && Array.isArray(fallbackData.content)) {
-        users.value = fallbackData.content
-        Message.success(`成功加载 ${fallbackData.content.length} 个用户`)
-      } else {
-        Message.error('用户数据格式错误')
+      try {
+        const fallbackResponse = await userApi.getUsers({ page: 0, size: 100 })
+        let fallbackData = {}
+
+        // 处理分页查询的响应格式
+        if (fallbackResponse && fallbackResponse.data) {
+          if (fallbackResponse.data.code === 200) {
+            fallbackData = fallbackResponse.data.data || { content: [] }
+          } else {
+            fallbackData = fallbackResponse.data || { content: [] }
+          }
+        } else {
+          fallbackData = fallbackResponse || { content: [] }
+        }
+
+        if (fallbackData.content && Array.isArray(fallbackData.content)) {
+          users.value = fallbackData.content
+          console.log(`通过分页查询成功加载 ${fallbackData.content.length} 个用户`)
+        } else {
+          users.value = []
+          console.warn('用户数据为空')
+        }
+      } catch (fallbackError) {
+        console.error('分页查询也失败:', fallbackError)
+        users.value = []
       }
     }
   } catch (error: any) {
+    console.error('加载用户数据失败:', error)
+    users.value = []
     Message.error('加载用户数据失败: ' + (error.message || '未知错误'))
   } finally {
     loading.value = false
@@ -305,10 +330,9 @@ const editUser = (user: User) => {
     fullName: user.fullName || '',
     role: user.role,
     status: user.status,
-    department: user.department || '',
-    position: user.position || '',
     phone: user.phone || '',
-    password: ''
+    password: '',
+    notes: user.department || user.position || '' // 填充notes
   })
   
   modalVisible.value = true
@@ -322,10 +346,9 @@ const resetFormData = () => {
     fullName: '',
     role: 'VIEWER',
     status: 'ACTIVE',
-    department: '',
-    position: '',
     phone: '',
-    password: ''
+    password: '',
+    notes: ''
   })
 }
 
@@ -334,28 +357,44 @@ const handleSave = async () => {
   try {
     // 表单验证
     const valid = await formRef.value?.validate()
-    if (!valid) return
+    if (!valid) {
+      console.log('表单验证失败');
+      return;
+    }
 
-    saveLoading.value = true
+    console.log('开始保存用户，表单数据:', formData);
+    saveLoading.value = true;
 
     if (isEditing.value && editingUserId.value) {
       // 编辑用户
-      const updateData = { ...formData }
-      delete updateData.password // 编辑时不包含密码
-      await userApi.updateUser(editingUserId.value, updateData)
-      Message.success('用户更新成功')
+      console.log('更新用户:', editingUserId.value);
+      const updateData = { ...formData };
+      delete updateData.password; // 编辑时不包含密码
+      const result = await userApi.updateUser(editingUserId.value, updateData);
+      console.log('用户更新结果:', result);
+      Message.success('用户更新成功');
     } else {
       // 创建用户
-      await userApi.createUser(formData)
-      Message.success('用户创建成功')
+      console.log('创建新用户');
+      const result = await userApi.createUser(formData);
+      console.log('用户创建结果:', result);
+      Message.success('用户创建成功');
     }
 
-    modalVisible.value = false
-    await loadUsers()
+    modalVisible.value = false;
+    console.log('准备重新加载用户列表');
+    await loadUsers();
+    console.log('用户列表已重新加载');
   } catch (error: any) {
-    Message.error('保存失败: ' + (error.message || '未知错误'))
+    console.error('保存用户失败:', error);
+    if (error.response) {
+      console.error('错误响应:', error.response.data);
+      Message.error('保存失败: ' + (error.response.data.message || error.message || '未知错误'));
+    } else {
+      Message.error('保存失败: ' + (error.message || '未知错误'));
+    }
   } finally {
-    saveLoading.value = false
+    saveLoading.value = false;
   }
 }
 

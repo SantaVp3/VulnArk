@@ -158,6 +158,34 @@
         </a-row>
         <a-row :gutter="16">
           <a-col :span="12">
+            <a-form-item label="资产状态" field="status" required>
+              <a-select v-model="formData.status" placeholder="请选择资产状态">
+                <a-option value="ACTIVE">活跃</a-option>
+                <a-option value="INACTIVE">非活跃</a-option>
+                <a-option value="MAINTENANCE">维护中</a-option>
+                <a-option value="DECOMMISSIONED">已停用</a-option>
+              </a-select>
+              <template #help>
+                <span style="color: #999;">必填项，表示资产当前状态</span>
+              </template>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="重要性等级" field="importance" required>
+              <a-select v-model="formData.importance" placeholder="请选择重要性等级">
+                <a-option value="LOW">低</a-option>
+                <a-option value="MEDIUM">中</a-option>
+                <a-option value="HIGH">高</a-option>
+                <a-option value="CRITICAL">关键</a-option>
+              </a-select>
+              <template #help>
+                <span style="color: #999;">必填项，表示资产的重要程度</span>
+              </template>
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="16">
+          <a-col :span="12">
             <a-form-item label="IP地址" field="ipAddress" required>
               <a-input v-model="formData.ipAddress" placeholder="请输入IP地址" />
               <template #help>
@@ -423,9 +451,14 @@ import {
 } from '@arco-design/web-vue/es/icon'
 import { assetApi, type Asset, type AssetQueryParams } from '@/api/asset'
 import { userApi, type User } from '@/api/user'
+import { useAuthStore } from '@/stores/auth'
+import { UserRole } from '@/types/auth'
 
 // 路由
 const router = useRouter()
+
+// 认证存储
+const authStore = useAuthStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -488,6 +521,8 @@ const formData = reactive<Partial<Asset>>({
 const rules = {
   name: [{ required: true, message: '请输入资产名称' }],
   type: [{ required: true, message: '请选择资产类型' }],
+  status: [{ required: true, message: '请选择资产状态' }],
+  importance: [{ required: true, message: '请选择重要性等级' }],
   ipAddress: [
     { required: true, message: '请输入IP地址' },
     { 
@@ -557,17 +592,28 @@ const loadAssets = async () => {
     // 先尝试获取所有资产，确保数据完整性
     let allAssets = []
     try {
-      allAssets = await assetApi.getAllAssets()
+      const allAssetsResponse = await assetApi.getAllAssets()
+      if (allAssetsResponse && allAssetsResponse.data && allAssetsResponse.data.code === 200) {
+        allAssets = allAssetsResponse.data.data || []
+      }
     } catch (e) {
       // 忽略错误，继续使用分页查询
     }
-    
+
     // 执行分页查询
-    const result = await assetApi.getAssets(params)
-    
+    const response = await assetApi.getAssets(params)
+
     // 更新数据
-    assets.value = result.content
-    pagination.total = result.totalElements
+    if (response && response.data && response.data.code === 200) {
+      const data = response.data.data
+      assets.value = data.content || []
+      pagination.total = data.totalElements || 0
+    } else {
+      const message = response?.data?.message || '获取资产列表失败'
+      Message.error(message)
+      assets.value = []
+      pagination.total = 0
+    }
     
     // 加载用户列表，用于显示负责人信息
     await loadUsers()
@@ -580,24 +626,35 @@ const loadAssets = async () => {
 
 const loadUsers = async () => {
   try {
-    const allUsers = await userApi.getAllUsers()
-    
-    // 保存用户列表
-    users.value = allUsers
-    
-    // 构建用户映射
-    userMap.value = {}
-    allUsers.forEach(user => {
-      userMap.value[user.id] = user
-    })
-    
-    // 构建用户选项
-    userOptions.value = allUsers.map(user => ({
-      label: user.fullName || user.username,
-      value: user.id
-    }))
+    // 检查用户是否有权限获取用户列表
+    if (authStore.user?.role === UserRole.ADMIN || authStore.user?.role === UserRole.MANAGER) {
+      const allUsers = await userApi.getAllUsers()
+      
+      // 保存用户列表
+      users.value = allUsers
+      
+      // 构建用户映射
+      userMap.value = {}
+      allUsers.forEach(user => {
+        userMap.value[user.id] = user
+      })
+      
+      // 构建用户选项
+      userOptions.value = allUsers.map(user => ({
+        label: user.fullName || user.username,
+        value: user.id
+      }))
+    } else {
+      // 非管理员用户，不加载用户列表
+      users.value = []
+      userMap.value = {}
+      userOptions.value = []
+    }
   } catch (error) {
-    Message.error('加载用户列表失败')
+    // 忽略403错误，因为这是预期的权限错误
+    if (error.response && error.response.status !== 403) {
+      Message.error('加载用户列表失败')
+    }
   }
 }
 
@@ -648,9 +705,13 @@ const handleDelete = (asset: Asset) => {
     content: `确定要删除资产"${asset.name}"吗？`,
     onOk: async () => {
       try {
-        await assetApi.deleteAsset(asset.id!)
-        Message.success('删除成功')
-        loadAssets()
+        const response = await assetApi.deleteAsset(asset.id!)
+        if (response && response.data && response.data.code === 200) {
+          Message.success('删除成功')
+          loadAssets()
+        } else {
+          Message.error(response?.data?.message || '删除失败')
+        }
       } catch (error) {
         Message.error('删除失败')
       }
@@ -664,10 +725,14 @@ const handleBatchDelete = () => {
     content: `确定要删除选中的 ${selectedRowKeys.value.length} 个资产吗？`,
     onOk: async () => {
       try {
-        await assetApi.batchDeleteAssets(selectedRowKeys.value)
-        Message.success('批量删除成功')
-        selectedRowKeys.value = []
-        loadAssets()
+        const response = await assetApi.batchDeleteAssets(selectedRowKeys.value)
+        if (response && response.data && response.data.code === 200) {
+          Message.success('批量删除成功')
+          selectedRowKeys.value = []
+          loadAssets()
+        } else {
+          Message.error(response?.data?.message || '批量删除失败')
+        }
       } catch (error) {
         Message.error('批量删除失败')
       }
@@ -721,13 +786,23 @@ const handleSave = async () => {
 
     
     if (editingAsset.value) {
-      await assetApi.updateAsset(editingAsset.value.id!, submitData)
-      Message.success('更新成功')
-      modalVisible.value = false
+      const response = await assetApi.updateAsset(editingAsset.value.id!, submitData)
+      if (response && response.data && response.data.code === 200) {
+        Message.success('更新成功')
+        modalVisible.value = false
+      } else {
+        Message.error(response?.data?.message || '更新失败')
+        return
+      }
     } else {
-      const createdAsset = await assetApi.createAsset(submitData as Omit<Asset, 'id'>)
-      Message.success('创建成功')
-      modalVisible.value = false
+      const response = await assetApi.createAsset(submitData as Omit<Asset, 'id'>)
+      if (response && response.data && response.data.code === 200) {
+        Message.success('创建成功')
+        modalVisible.value = false
+      } else {
+        Message.error(response?.data?.message || '创建失败')
+        return
+      }
     }
     
     // 重置搜索条件并跳转到第一页
@@ -764,9 +839,12 @@ const handleSave = async () => {
           sortDir: 'desc',
           _t: new Date().getTime()
         }
-        const result = await assetApi.getAssets(params)
-        assets.value = result.content
-        pagination.total = result.totalElements
+        const response = await assetApi.getAssets(params)
+        if (response && response.data && response.data.code === 200) {
+          const data = response.data.data
+          assets.value = data.content || []
+          pagination.total = data.totalElements || 0
+        }
       } catch (error) {
         // 错误处理
       } finally {
@@ -837,8 +915,12 @@ const handleImport = () => {
 
 const handleExport = async () => {
   try {
-    const assets = await assetApi.exportAssets(selectedRowKeys.value.length > 0 ? selectedRowKeys.value : undefined)
-    
+    const response = await assetApi.exportAssets(selectedRowKeys.value.length > 0 ? selectedRowKeys.value : undefined)
+    let assets = []
+    if (response && response.data && response.data.code === 200) {
+      assets = response.data.data || []
+    }
+
     // 创建并下载文件
     const dataStr = JSON.stringify(assets, null, 2)
     const blob = new Blob([dataStr], { type: 'application/json' })

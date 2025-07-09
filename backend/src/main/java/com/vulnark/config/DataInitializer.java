@@ -8,13 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.CommandLineRunner;
 
 /**
  * 数据初始化器
  * 确保系统启动时有默认的管理员用户
  */
-@Component
-public class DataInitializer {
+@Component  // 启用数据初始化器，确保创建默认用户
+public class DataInitializer implements CommandLineRunner {
     
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
     
@@ -23,6 +25,9 @@ public class DataInitializer {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     
     @PostConstruct
     public void initializeData() {
@@ -32,6 +37,17 @@ public class DataInitializer {
         initializeDefaultUsers();
         
         logger.info("系统数据初始化完成");
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        // 更新现有agents记录，为agent_id字段设置值
+        try {
+            jdbcTemplate.execute("UPDATE agents SET agent_id = CONCAT('agent-', id) WHERE agent_id IS NULL");
+            logger.info("已更新agents表中的agent_id字段");
+        } catch (Exception e) {
+            logger.warn("更新agents表时出错: {}", e.getMessage());
+        }
     }
     
     /**

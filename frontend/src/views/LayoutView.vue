@@ -22,40 +22,55 @@
         class="layout-menu"
         @menu-item-click="onMenuClick"
       >
-        <a-menu-item key="/dashboard">
+        <!-- 管理员、经理和分析师可见的仪表盘 -->
+        <a-menu-item key="/dashboard" v-if="canViewDashboard">
           <template #icon>
             <icon-dashboard />
           </template>
           仪表板
         </a-menu-item>
         
-        <a-menu-item key="/assets">
+        <!-- 管理员、经理和分析师可见的资产管理 -->
+        <a-menu-item key="/assets" v-if="canViewAssets">
           <template #icon>
             <icon-desktop />
           </template>
           资产管理
         </a-menu-item>
         
+        <!-- 所有用户可见的漏洞管理 -->
         <a-menu-item key="/vulnerabilities">
           <template #icon>
             <icon-bug />
           </template>
           漏洞管理
         </a-menu-item>
-        
 
-        
-        <a-sub-menu key="discovery">
+        <!-- 管理员、经理和分析师可见的基线扫描 -->
+        <a-menu-item key="/baseline-check" v-if="canViewScans">
           <template #icon>
-            <icon-find-replace />
+            <icon-check-circle />
           </template>
-          <template #title>发现与分析</template>
-          <a-menu-item key="/asset-discovery">资产发现</a-menu-item>
-          <a-menu-item key="/asset-dependency">资产依赖</a-menu-item>
-          <a-menu-item key="/baseline-check">基线检查</a-menu-item>
-        </a-sub-menu>
-        
-        <a-menu-item key="/users">
+          基线扫描
+        </a-menu-item>
+
+        <!-- 管理员、经理和分析师可见的漏洞扫描 -->
+        <a-menu-item key="/vulnerability-scan" v-if="canViewScans">
+          <template #icon>
+            <icon-bug />
+          </template>
+          漏洞扫描
+        </a-menu-item>
+
+        <!-- 管理员和经理才能看到的菜单 -->
+        <a-menu-item key="/scan-tools" v-if="hasAdminAccess">
+          <template #icon>
+            <icon-tool />
+          </template>
+          工具管理
+        </a-menu-item>
+
+        <a-menu-item key="/users" v-if="hasAdminAccess">
           <template #icon>
             <icon-user />
           </template>
@@ -135,7 +150,8 @@ import {
   IconDashboard,
   IconDesktop,
   IconBug,
-  IconFindReplace,
+  IconCheckCircle,
+  IconTool,
   IconUser,
   IconSettings,
   IconPoweroff,
@@ -143,6 +159,7 @@ import {
   IconMoon
 } from '@arco-design/web-vue/es/icon'
 import { useAuthStore } from '@/stores/auth'
+import { UserRole } from '@/types/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -164,6 +181,29 @@ const currentPageTitle = computed(() => {
 // 用户信息
 const userStore = computed(() => authStore)
 
+// 判断是否有管理员权限
+const hasAdminAccess = computed(() => {
+  return userStore.value.user?.role === UserRole.ADMIN || userStore.value.user?.role === UserRole.MANAGER
+})
+
+// 判断是否可以查看资产管理
+const canViewAssets = computed(() => {
+  const role = userStore.value.user?.role
+  return role === UserRole.ADMIN || role === UserRole.MANAGER || role === UserRole.ANALYST
+})
+
+// 判断是否可以查看扫描功能
+const canViewScans = computed(() => {
+  const role = userStore.value.user?.role
+  return role === UserRole.ADMIN || role === UserRole.MANAGER || role === UserRole.ANALYST
+})
+
+// 判断是否可以查看仪表盘
+const canViewDashboard = computed(() => {
+  const role = userStore.value.user?.role
+  return role === UserRole.ADMIN || role === UserRole.MANAGER || role === UserRole.ANALYST
+})
+
 // 监听路由变化
 watch(
   () => route.path,
@@ -173,8 +213,8 @@ watch(
 )
 
 // 侧边栏折叠
-const onCollapse = (collapsed: boolean) => {
-  collapsed.value = collapsed
+const onCollapse = (value: boolean) => {
+  collapsed.value = value
 }
 
 // 菜单点击

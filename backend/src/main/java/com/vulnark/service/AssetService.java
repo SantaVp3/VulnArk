@@ -44,7 +44,10 @@ public class AssetService {
         asset.setName(request.getName());
         asset.setDescription(request.getDescription());
         asset.setType(request.getType());
-        asset.setStatus(request.getStatus());
+        // 只有当请求中提供了status时才设置，否则使用默认值
+        if (request.getStatus() != null) {
+            asset.setStatus(request.getStatus());
+        }
         asset.setIpAddress(request.getIpAddress());
         asset.setDomain(request.getDomain());
         asset.setPort(request.getPort());
@@ -52,7 +55,17 @@ public class AssetService {
         asset.setService(request.getService());
         asset.setVersion(request.getVersion());
         asset.setOperatingSystem(request.getOperatingSystem());
-        asset.setImportance(request.getImportance());
+        // 只有当请求中提供了importance时才设置，否则使用默认值
+        if (request.getImportance() != null) {
+            asset.setImportance(request.getImportance());
+        }
+        
+        // 设置项目ID，如果请求中没有提供，则使用默认值1
+        if (request.getProjectId() != null) {
+            asset.setProjectId(request.getProjectId());
+        } else {
+            asset.setProjectId(1L);
+        }
 
         asset.setOwnerId(request.getOwnerId());
         asset.setLocation(request.getLocation());
@@ -90,6 +103,13 @@ public class AssetService {
         asset.setVersion(request.getVersion());
         asset.setOperatingSystem(request.getOperatingSystem());
         asset.setImportance(request.getImportance());
+
+        // 更新项目ID，如果请求中没有提供，则使用默认值1
+        if (request.getProjectId() != null) {
+            asset.setProjectId(request.getProjectId());
+        } else {
+            asset.setProjectId(1L);
+        }
 
         asset.setOwnerId(request.getOwnerId());
         asset.setLocation(request.getLocation());
@@ -236,15 +256,6 @@ public class AssetService {
         
         Asset asset = getAssetById(id);
         asset.setRiskScore(riskScore);
-        return assetRepository.save(asset);
-    }
-    
-    /**
-     * 更新资产扫描时间
-     */
-    public Asset updateAssetScanTime(Long id) {
-        Asset asset = getAssetById(id);
-        asset.setLastScanTime(LocalDateTime.now());
         return assetRepository.save(asset);
     }
     

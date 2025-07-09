@@ -42,24 +42,8 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { data } = response
-    
-    // 检查响应数据结构
-    if (data && typeof data === 'object' && 'code' in data) {
-      // 后端返回格式: {code: 200, message: "success", data: [...]}
-      if (data.code === 200) {
-        return data.data !== undefined ? data.data : data
-      } else {
-        Message.error(data.message || '请求失败')
-        return Promise.reject(new Error(data.message || '请求失败'))
-      }
-    } else if (response.status === 200) {
-      // 直接返回数据
-      return data
-    } else {
-      Message.error('请求失败')
-      return Promise.reject(new Error('请求失败'))
-    }
+    // 直接返回完整的响应对象，让业务代码自己处理
+    return response
   },
   (error: AxiosError) => {
     if (error.response) {

@@ -298,7 +298,6 @@ public class AssetDetectionService {
             
             if (hasOnlineDetection) {
                 asset.setStatus(Asset.Status.ACTIVE);
-                asset.setLastScanTime(LocalDateTime.now());
             } else {
                 asset.setStatus(Asset.Status.INACTIVE);
             }

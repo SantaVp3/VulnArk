@@ -41,14 +41,6 @@ public class UserRequest {
     @Schema(description = "状态")
     private User.Status status;
     
-    @Schema(description = "部门")
-    @Size(max = 100, message = "部门长度不能超过100个字符")
-    private String department;
-    
-    @Schema(description = "职位")
-    @Size(max = 100, message = "职位长度不能超过100个字符")
-    private String position;
-    
     @Schema(description = "备注")
     private String notes;
     
@@ -118,22 +110,6 @@ public class UserRequest {
     
     public void setStatus(User.Status status) {
         this.status = status;
-    }
-    
-    public String getDepartment() {
-        return department;
-    }
-    
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-    
-    public String getPosition() {
-        return position;
-    }
-    
-    public void setPosition(String position) {
-        this.position = position;
     }
     
     public String getNotes() {
