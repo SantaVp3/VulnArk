@@ -1,0 +1,6691 @@
+basePath: /
+definitions:
+  controller.APICompatibility:
+    properties:
+      changes:
+        items:
+          type: string
+        type: array
+      compatible:
+        type: boolean
+      from_version:
+        type: string
+      migration:
+        type: string
+      to_version:
+        type: string
+    type: object
+  controller.APIEndpoint:
+    properties:
+      description:
+        type: string
+      method:
+        type: string
+      parameters:
+        items:
+          $ref: '#/definitions/controller.APIParameter'
+        type: array
+      path:
+        type: string
+      responses:
+        additionalProperties:
+          type: string
+        type: object
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  controller.APIParameter:
+    properties:
+      description:
+        type: string
+      example:
+        type: string
+      in:
+        description: query, path, header, body
+        type: string
+      name:
+        type: string
+      required:
+        type: boolean
+      type:
+        type: string
+    type: object
+  controller.APITestRequest:
+    properties:
+      body:
+        additionalProperties: true
+        type: object
+      headers:
+        additionalProperties:
+          type: string
+        type: object
+      method:
+        enum:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        type: string
+      timeout:
+        description: 超时时间（秒）
+        type: integer
+      url:
+        type: string
+    required:
+    - method
+    - url
+    type: object
+  controller.APITestResponse:
+    properties:
+      body: {}
+      error:
+        type: string
+      headers:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      response_time:
+        description: 响应时间（毫秒）
+        type: integer
+      status_code:
+        type: integer
+    type: object
+  controller.APIVersion:
+    properties:
+      base_path:
+        type: string
+      changes:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      docs_url:
+        type: string
+      release_date:
+        type: string
+      status:
+        description: active, deprecated, sunset
+        type: string
+      sunset_date:
+        type: string
+      version:
+        type: string
+    type: object
+  controller.APIVersionInfo:
+    properties:
+      current:
+        $ref: '#/definitions/controller.APIVersion'
+      deprecated:
+        items:
+          $ref: '#/definitions/controller.APIVersion'
+        type: array
+      latest:
+        type: string
+      recommended:
+        type: string
+      supported:
+        items:
+          $ref: '#/definitions/controller.APIVersion'
+        type: array
+    type: object
+  model.Asset:
+    properties:
+      business_line:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      id:
+        type: integer
+      importance_level:
+        description: 1-高，2-中，3-低
+        type: integer
+      ip_address:
+        type: string
+      name:
+        type: string
+      os:
+        type: string
+      owner:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      owner_id:
+        type: integer
+      port:
+        type: string
+      status:
+        description: 1-正常，0-下线
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  model.AssetAnalytics:
+    properties:
+      growth_trend:
+        description: 资产增长趋势
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+      importance_distribution:
+        description: 重要性级别分布
+        items:
+          $ref: '#/definitions/model.ImportanceCount'
+        type: array
+      risk_assessment:
+        description: 资产漏洞风险评估
+        items:
+          $ref: '#/definitions/model.AssetRiskCount'
+        type: array
+      status_distribution:
+        description: 资产状态分布
+        items:
+          $ref: '#/definitions/model.AssetStatusCount'
+        type: array
+      type_distribution:
+        description: 资产类型分布
+        items:
+          $ref: '#/definitions/model.AssetTypeCount'
+        type: array
+    type: object
+  model.AssetCreateRequest:
+    properties:
+      business_line:
+        type: string
+      category:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      importance_level:
+        enum:
+        - 1
+        - 2
+        - 3
+        type: integer
+      ip_address:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      os:
+        type: string
+      owner_id:
+        type: integer
+      port:
+        type: string
+      type:
+        enum:
+        - server
+        - database
+        - application
+        - network
+        type: string
+      version:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  model.AssetImportRequest:
+    properties:
+      assets:
+        items:
+          $ref: '#/definitions/model.AssetCreateRequest'
+        type: array
+    required:
+    - assets
+    type: object
+  model.AssetInfo:
+    properties:
+      business_line:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      id:
+        type: integer
+      importance_level:
+        type: integer
+      ip_address:
+        type: string
+      name:
+        type: string
+      os:
+        type: string
+      owner:
+        $ref: '#/definitions/model.UserInfo'
+      owner_id:
+        type: integer
+      port:
+        type: string
+      status:
+        type: integer
+      type:
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: string
+    type: object
+  model.AssetRiskCount:
+    properties:
+      asset_id:
+        type: integer
+      asset_name:
+        type: string
+      asset_type:
+        type: string
+      critical_count:
+        type: integer
+      high_count:
+        type: integer
+      risk_score:
+        type: integer
+      vulnerability_count:
+        type: integer
+    type: object
+  model.AssetStats:
+    properties:
+      by_department:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_importance:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_status:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      total:
+        type: integer
+    type: object
+  model.AssetStatusCount:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  model.AssetTypeCount:
+    properties:
+      count:
+        type: integer
+      type:
+        type: string
+    type: object
+  model.AssetUpdateRequest:
+    properties:
+      business_line:
+        type: string
+      category:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      importance_level:
+        enum:
+        - 1
+        - 2
+        - 3
+        type: integer
+      ip_address:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      os:
+        type: string
+      owner_id:
+        type: integer
+      port:
+        type: string
+      status:
+        enum:
+        - 0
+        - 1
+        type: integer
+      type:
+        enum:
+        - server
+        - database
+        - application
+        - network
+        type: string
+      version:
+        type: string
+    type: object
+  model.AssetVulnerabilityCount:
+    properties:
+      asset_id:
+        type: integer
+      asset_name:
+        type: string
+      asset_type:
+        type: string
+      count:
+        type: integer
+    type: object
+  model.AssignmentConditions:
+    additionalProperties: true
+    type: object
+  model.AssignmentHistoryItem:
+    properties:
+      assigned_at:
+        type: string
+      assignee_id:
+        type: integer
+      assignee_name:
+        type: string
+      assigner_id:
+        type: integer
+      assigner_name:
+        type: string
+      assignment_type:
+        type: string
+      id:
+        type: integer
+      vulnerability_id:
+        type: integer
+      vulnerability_title:
+        type: string
+    type: object
+  model.AssignmentRule:
+    properties:
+      assignee:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      assignee_id:
+        type: integer
+      conditions:
+        $ref: '#/definitions/model.AssignmentConditions'
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+      rule_type:
+        description: asset_type, severity, department, owasp_category
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.AssignmentRuleCreateRequest:
+    properties:
+      assignee_id:
+        type: integer
+      conditions:
+        $ref: '#/definitions/model.AssignmentConditions'
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      priority:
+        type: integer
+      rule_type:
+        enum:
+        - asset_type
+        - severity
+        - department
+        - owasp_category
+        type: string
+    required:
+    - assignee_id
+    - conditions
+    - name
+    - rule_type
+    type: object
+  model.AssignmentRuleUpdateRequest:
+    properties:
+      assignee_id:
+        type: integer
+      conditions:
+        $ref: '#/definitions/model.AssignmentConditions'
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      priority:
+        type: integer
+      rule_type:
+        enum:
+        - asset_type
+        - severity
+        - department
+        - owasp_category
+        type: string
+    type: object
+  model.AssignmentStats:
+    properties:
+      auto_assignments:
+        type: integer
+      by_assignee:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_rule_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      manual_assignments:
+        type: integer
+      recent_assignments:
+        items:
+          $ref: '#/definitions/model.AssignmentHistoryItem'
+        type: array
+      total_assignments:
+        type: integer
+    type: object
+  model.AuditLog:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      duration:
+        description: 毫秒
+        type: integer
+      error:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      request:
+        type: string
+      resource:
+        type: string
+      resource_id:
+        type: integer
+      response:
+        type: string
+      status:
+        type: integer
+      user:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      user_agent:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  model.AuthorStats:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      real_name:
+        type: string
+      username:
+        type: string
+    type: object
+  model.AutoAssignRequest:
+    properties:
+      force_reassign:
+        description: 是否强制重新分配已分配的漏洞
+        type: boolean
+      vulnerability_ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  model.BatchAssignRequest:
+    properties:
+      assignee_id:
+        type: integer
+      assignment_reason:
+        type: string
+      vulnerability_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - assignee_id
+    - vulnerability_ids
+    type: object
+  model.ChangePasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  model.ConfigValue:
+    additionalProperties: true
+    type: object
+  model.DashboardStats:
+    properties:
+      active_users:
+        description: 活跃用户
+        items:
+          $ref: '#/definitions/model.UserActivity'
+        type: array
+      asset_type_stats:
+        description: 资产类型统计
+        items:
+          $ref: '#/definitions/model.AssetTypeCount'
+        type: array
+      recent_trends:
+        allOf:
+        - $ref: '#/definitions/model.TrendStats'
+        description: 最近趋势
+      severity_stats:
+        description: 严重程度统计
+        items:
+          $ref: '#/definitions/model.SeverityCount'
+        type: array
+      top_vulnerability_types:
+        description: 热门漏洞类型
+        items:
+          $ref: '#/definitions/model.VulnerabilityTypeCount'
+        type: array
+      total_assets:
+        type: integer
+      total_reports:
+        type: integer
+      total_users:
+        type: integer
+      total_vulnerabilities:
+        description: 总体统计
+        type: integer
+      vulnerability_stats:
+        allOf:
+        - $ref: '#/definitions/model.VulnerabilityStatusStats'
+        description: 漏洞状态统计
+    type: object
+  model.DepartmentCount:
+    properties:
+      count:
+        type: integer
+      department:
+        type: string
+    type: object
+  model.DiscovererCount:
+    properties:
+      count:
+        type: integer
+      discoverer_id:
+        type: integer
+      real_name:
+        type: string
+      username:
+        type: string
+    type: object
+  model.EmailSendRequest:
+    properties:
+      bcc:
+        items:
+          type: string
+        type: array
+      cc:
+        items:
+          type: string
+        type: array
+      content:
+        minLength: 1
+        type: string
+      subject:
+        maxLength: 255
+        minLength: 1
+        type: string
+      template_id:
+        type: integer
+      to:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      variables:
+        additionalProperties: true
+        type: object
+    required:
+    - content
+    - subject
+    - to
+    type: object
+  model.EmailTemplate:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      creator:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      creator_id:
+        type: integer
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      subject:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      variables:
+        type: string
+    type: object
+  model.EmailTemplateCreateRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      subject:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - vulnerability
+        - report
+        - system
+        - security
+        type: string
+      variables:
+        type: string
+    required:
+    - content
+    - name
+    - subject
+    - type
+    type: object
+  model.EmailTemplateUpdateRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      subject:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - vulnerability
+        - report
+        - system
+        - security
+        type: string
+      variables:
+        type: string
+    type: object
+  model.ExportRequest:
+    properties:
+      end_date:
+        type: string
+      filters:
+        additionalProperties: true
+        type: object
+      format:
+        enum:
+        - excel
+        - pdf
+        - csv
+        type: string
+      start_date:
+        type: string
+      type:
+        enum:
+        - dashboard
+        - vulnerability
+        - asset
+        - report
+        - user
+        type: string
+    required:
+    - format
+    - type
+    type: object
+  model.ExportResponse:
+    properties:
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      file_url:
+        type: string
+    type: object
+  model.FixTimeRangeCount:
+    properties:
+      count:
+        type: integer
+      range:
+        type: string
+    type: object
+  model.FixTimeStats:
+    properties:
+      average_fix_time:
+        description: 平均修复时间（天）
+        type: number
+      fix_time_ranges:
+        items:
+          $ref: '#/definitions/model.FixTimeRangeCount'
+        type: array
+      median_fix_time:
+        description: 中位数修复时间（天）
+        type: number
+    type: object
+  model.ImportanceCount:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      importance:
+        type: string
+    type: object
+  model.KBMetadata:
+    additionalProperties: true
+    type: object
+  model.KnowledgeBase:
+    properties:
+      author:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      author_id:
+        type: integer
+      category:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      like_count:
+        type: integer
+      metadata:
+        $ref: '#/definitions/model.KBMetadata'
+      published_at:
+        type: string
+      reviewed_at:
+        type: string
+      reviewer:
+        $ref: '#/definitions/model.User'
+      reviewer_id:
+        type: integer
+      severity:
+        type: string
+      status:
+        type: string
+      summary:
+        type: string
+      tags:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      view_count:
+        type: integer
+    type: object
+  model.KnowledgeCreateRequest:
+    properties:
+      category:
+        enum:
+        - vulnerability
+        - security
+        - tool
+        - guide
+        - best_practice
+        type: string
+      content:
+        minLength: 1
+        type: string
+      metadata:
+        $ref: '#/definitions/model.KBMetadata'
+      severity:
+        enum:
+        - low
+        - medium
+        - high
+        - critical
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - article
+        - tutorial
+        - faq
+        - solution
+        - reference
+        type: string
+    required:
+    - category
+    - content
+    - title
+    - type
+    type: object
+  model.KnowledgeStats:
+    properties:
+      by_category:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      draft:
+        type: integer
+      published:
+        type: integer
+      recent:
+        items:
+          $ref: '#/definitions/model.KnowledgeSummary'
+        type: array
+      top_authors:
+        items:
+          $ref: '#/definitions/model.AuthorStats'
+        type: array
+      top_tags:
+        items:
+          $ref: '#/definitions/model.TagStats'
+        type: array
+      total:
+        type: integer
+    type: object
+  model.KnowledgeSummary:
+    properties:
+      author_name:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      like_count:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+      view_count:
+        type: integer
+    type: object
+  model.KnowledgeUpdateRequest:
+    properties:
+      category:
+        enum:
+        - vulnerability
+        - security
+        - tool
+        - guide
+        - best_practice
+        type: string
+      content:
+        minLength: 1
+        type: string
+      metadata:
+        $ref: '#/definitions/model.KBMetadata'
+      severity:
+        enum:
+        - low
+        - medium
+        - high
+        - critical
+        type: string
+      status:
+        enum:
+        - draft
+        - published
+        - archived
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - article
+        - tutorial
+        - faq
+        - solution
+        - reference
+        type: string
+    type: object
+  model.Notification:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      data:
+        $ref: '#/definitions/model.NotificationData'
+      entity_id:
+        type: integer
+      entity_type:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      level:
+        type: string
+      read_at:
+        type: string
+      recipient:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      recipient_id:
+        type: integer
+      sender:
+        $ref: '#/definitions/model.User'
+      sender_id:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.NotificationCreateRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      data:
+        $ref: '#/definitions/model.NotificationData'
+      entity_id:
+        type: integer
+      entity_type:
+        type: string
+      expires_at:
+        type: string
+      level:
+        enum:
+        - info
+        - warning
+        - error
+        - success
+        type: string
+      recipient_id:
+        type: integer
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - system
+        - vulnerability
+        - report
+        - security
+        - maintenance
+        type: string
+    required:
+    - content
+    - level
+    - recipient_id
+    - title
+    - type
+    type: object
+  model.NotificationData:
+    additionalProperties: true
+    type: object
+  model.NotificationSetting:
+    properties:
+      email_enabled:
+        type: boolean
+      id:
+        type: integer
+      report_reviewed:
+        type: boolean
+      report_submitted:
+        type: boolean
+      security_alert:
+        type: boolean
+      system_enabled:
+        type: boolean
+      system_maintenance:
+        type: boolean
+      user:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      user_id:
+        type: integer
+      vulnerability_assigned:
+        type: boolean
+      vulnerability_updated:
+        type: boolean
+    type: object
+  model.NotificationSettingUpdateRequest:
+    properties:
+      email_enabled:
+        type: boolean
+      report_reviewed:
+        type: boolean
+      report_submitted:
+        type: boolean
+      security_alert:
+        type: boolean
+      system_enabled:
+        type: boolean
+      system_maintenance:
+        type: boolean
+      vulnerability_assigned:
+        type: boolean
+      vulnerability_updated:
+        type: boolean
+    type: object
+  model.NotificationStats:
+    properties:
+      by_level:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      recent:
+        items:
+          $ref: '#/definitions/model.NotificationSummary'
+        type: array
+      total:
+        type: integer
+      unread:
+        type: integer
+    type: object
+  model.NotificationSummary:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      level:
+        type: string
+      sender_name:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  model.OWASPCategory:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      severity_level:
+        description: 1-高，2-中，3-低
+        type: integer
+      year:
+        type: integer
+    type: object
+  model.OWASPCount:
+    properties:
+      category:
+        type: string
+      count:
+        type: integer
+    type: object
+  model.PaginationResponse:
+    properties:
+      data: {}
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  model.Permission:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      module:
+        type: string
+      name:
+        type: string
+      resource:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.PermissionCreateRequest:
+    properties:
+      action:
+        maxLength: 50
+        minLength: 1
+        type: string
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      module:
+        maxLength: 50
+        minLength: 1
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      resource:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - action
+    - display_name
+    - module
+    - name
+    - resource
+    type: object
+  model.PermissionUpdateRequest:
+    properties:
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      is_active:
+        type: boolean
+    type: object
+  model.Report:
+    properties:
+      asset_ids:
+        description: 关联的资产ID列表
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      download_url:
+        type: string
+      file_name:
+        type: string
+      file_path:
+        type: string
+      file_size:
+        type: integer
+      file_type:
+        type: string
+      id:
+        type: integer
+      review_notes:
+        description: 审核备注
+        type: string
+      reviewed_at:
+        description: 审核日期
+        type: string
+      reviewer:
+        $ref: '#/definitions/model.User'
+      reviewer_id:
+        description: 审核人ID
+        type: integer
+      severity:
+        type: string
+      status:
+        type: string
+      submitted_at:
+        description: 提交日期
+        type: string
+      tags:
+        description: 标签
+        items:
+          type: string
+        type: array
+      test_date:
+        description: 测试日期
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      uploader:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      uploader_id:
+        type: integer
+    required:
+    - title
+    - type
+    type: object
+  model.ReportAnalytics:
+    properties:
+      review_time_stats:
+        allOf:
+        - $ref: '#/definitions/model.ReviewTimeStats'
+        description: 审核时间统计
+      status_distribution:
+        description: 报告状态分布
+        items:
+          $ref: '#/definitions/model.ReportStatusCount'
+        type: array
+      submission_trend:
+        description: 提交趋势
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+      submitter_stats:
+        description: 提交者统计
+        items:
+          $ref: '#/definitions/model.SubmitterCount'
+        type: array
+      type_distribution:
+        description: 报告类型分布
+        items:
+          $ref: '#/definitions/model.ReportTypeCount'
+        type: array
+    type: object
+  model.ReportReviewRequest:
+    properties:
+      review_notes:
+        type: string
+      status:
+        enum:
+        - approved
+        - rejected
+        type: string
+    required:
+    - status
+    type: object
+  model.ReportStats:
+    properties:
+      by_severity:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_status:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      recent_reports:
+        items:
+          $ref: '#/definitions/model.ReportSummary'
+        type: array
+      total:
+        type: integer
+      total_size:
+        type: integer
+    type: object
+  model.ReportStatusCount:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  model.ReportSummary:
+    properties:
+      created_at:
+        type: string
+      file_size:
+        type: integer
+      id:
+        type: integer
+      severity:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      uploader_name:
+        type: string
+    type: object
+  model.ReportTypeCount:
+    properties:
+      count:
+        type: integer
+      type:
+        type: string
+    type: object
+  model.ReportUpdateRequest:
+    properties:
+      asset_ids:
+        items:
+          type: integer
+        type: array
+      description:
+        type: string
+      severity:
+        enum:
+        - critical
+        - high
+        - medium
+        - low
+        - info
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      test_date:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - penetration_test
+        - vulnerability_assessment
+        - security_audit
+        - compliance_check
+        - other
+        type: string
+    type: object
+  model.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+  model.ReviewTimeStats:
+    properties:
+      average_review_time:
+        description: 平均审核时间（天）
+        type: number
+      median_review_time:
+        description: 中位数审核时间（天）
+        type: number
+    type: object
+  model.Role:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    required:
+    - name
+    type: object
+  model.RoleCreateRequest:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+    required:
+    - name
+    type: object
+  model.RoleInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+    type: object
+  model.RolePermissionRequest:
+    properties:
+      permission_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - permission_ids
+    type: object
+  model.RoleUpdateRequest:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+    type: object
+  model.SeverityCount:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      severity:
+        type: string
+    type: object
+  model.SeverityTrendPoint:
+    properties:
+      critical:
+        type: integer
+      date:
+        type: string
+      high:
+        type: integer
+      low:
+        type: integer
+      medium:
+        type: integer
+    type: object
+  model.StatusCount:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  model.SubmitterCount:
+    properties:
+      count:
+        type: integer
+      real_name:
+        type: string
+      submitter_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  model.SystemConfig:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      default_value:
+        $ref: '#/definitions/model.ConfigValue'
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: integer
+      is_editable:
+        type: boolean
+      is_public:
+        type: boolean
+      key:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      validation:
+        type: string
+      value:
+        $ref: '#/definitions/model.ConfigValue'
+    type: object
+  model.SystemConfigUpdateRequest:
+    properties:
+      value:
+        $ref: '#/definitions/model.ConfigValue'
+    required:
+    - value
+    type: object
+  model.Tag:
+    properties:
+      category:
+        type: string
+      color:
+        type: string
+      created_at:
+        type: string
+      creator:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      creator_id:
+        type: integer
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+      usage_count:
+        type: integer
+    type: object
+  model.TagCreateRequest:
+    properties:
+      category:
+        enum:
+        - vulnerability
+        - security
+        - tool
+        - language
+        - framework
+        type: string
+      color:
+        type: string
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      name:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - display_name
+    - name
+    type: object
+  model.TagStats:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      display_name:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.TagUpdateRequest:
+    properties:
+      category:
+        enum:
+        - vulnerability
+        - security
+        - tool
+        - language
+        - framework
+        type: string
+      color:
+        type: string
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  model.Template:
+    properties:
+      category:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      creator:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      creator_id:
+        type: integer
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      usage_count:
+        type: integer
+      variables:
+        type: string
+    type: object
+  model.TemplateCreateRequest:
+    properties:
+      category:
+        enum:
+        - report
+        - guide
+        - solution
+        - test
+        type: string
+      content:
+        minLength: 1
+        type: string
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      type:
+        enum:
+        - vulnerability_report
+        - security_guide
+        - fix_solution
+        - test_case
+        type: string
+      variables:
+        type: string
+    required:
+    - category
+    - content
+    - display_name
+    - name
+    - type
+    type: object
+  model.TemplateUpdateRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      description:
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      is_active:
+        type: boolean
+      variables:
+        type: string
+    type: object
+  model.TimeRangeStats:
+    properties:
+      last_month:
+        type: integer
+      last_week:
+        type: integer
+      this_month:
+        type: integer
+      this_week:
+        type: integer
+      today:
+        type: integer
+      yesterday:
+        type: integer
+    type: object
+  model.TimelineEntry:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      new_value:
+        type: string
+      old_value:
+        type: string
+      user:
+        $ref: '#/definitions/model.UserInfo'
+    type: object
+  model.TrendPoint:
+    properties:
+      count:
+        type: integer
+      date:
+        type: string
+    type: object
+  model.TrendStats:
+    properties:
+      asset_trend:
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+      report_trend:
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+      vulnerability_trend:
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+    type: object
+  model.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      department:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login_at:
+        type: string
+      phone:
+        type: string
+      real_name:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/model.Role'
+        description: 关联
+      role_id:
+        type: integer
+      status:
+        description: 1-正常，0-禁用
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - real_name
+    - role_id
+    - username
+    type: object
+  model.UserActivity:
+    properties:
+      activity_count:
+        type: integer
+      real_name:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  model.UserActivityStats:
+    properties:
+      last_login_at:
+        type: string
+      real_name:
+        type: string
+      reports_submitted:
+        type: integer
+      user_id:
+        type: integer
+      username:
+        type: string
+      vulnerabilities_found:
+        type: integer
+    type: object
+  model.UserAnalytics:
+    properties:
+      activity_stats:
+        description: 用户活动统计
+        items:
+          $ref: '#/definitions/model.UserActivityStats'
+        type: array
+      department_distribution:
+        description: 部门分布
+        items:
+          $ref: '#/definitions/model.DepartmentCount'
+        type: array
+      login_trend:
+        description: 登录趋势
+        items:
+          $ref: '#/definitions/model.TrendPoint'
+        type: array
+      role_distribution:
+        description: 用户角色分布
+        items:
+          $ref: '#/definitions/model.UserRoleCount'
+        type: array
+      status_distribution:
+        description: 用户状态分布
+        items:
+          $ref: '#/definitions/model.UserStatusCount'
+        type: array
+    type: object
+  model.UserCreateRequest:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      real_name:
+        type: string
+      role_id:
+        type: integer
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - real_name
+    - role_id
+    - username
+    type: object
+  model.UserInfo:
+    properties:
+      avatar:
+        type: string
+      department:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      last_login_at:
+        type: string
+      phone:
+        type: string
+      real_name:
+        type: string
+      role:
+        $ref: '#/definitions/model.RoleInfo'
+      status:
+        type: integer
+      username:
+        type: string
+    type: object
+  model.UserLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  model.UserLoginResponse:
+    properties:
+      expires_at:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/model.UserInfo'
+    type: object
+  model.UserRoleCount:
+    properties:
+      count:
+        type: integer
+      role_id:
+        type: integer
+      role_name:
+        type: string
+    type: object
+  model.UserStatusCount:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  model.UserUpdateRequest:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      real_name:
+        type: string
+      role_id:
+        type: integer
+      status:
+        type: integer
+    type: object
+  model.Vulnerability:
+    properties:
+      asset:
+        allOf:
+        - $ref: '#/definitions/model.Asset'
+        description: 关联
+      asset_id:
+        type: integer
+      assigned_at:
+        type: string
+      assignee:
+        $ref: '#/definitions/model.User'
+      assignee_id:
+        type: integer
+      attachments:
+        items:
+          $ref: '#/definitions/model.VulnerabilityAttachment'
+        type: array
+      closed_at:
+        type: string
+      cnvd_id:
+        type: string
+      created_at:
+        type: string
+      cve_id:
+        type: string
+      cvss_score:
+        type: number
+      description:
+        type: string
+      discovered_at:
+        type: string
+      discoverer:
+        $ref: '#/definitions/model.User'
+      discoverer_id:
+        type: integer
+      fix_suggestion:
+        type: string
+      fixed_at:
+        type: string
+      id:
+        type: integer
+      impact_scope:
+        type: string
+      owasp_category:
+        $ref: '#/definitions/model.OWASPCategory'
+      owasp_category_id:
+        type: integer
+      reproduction_steps:
+        type: string
+      severity_level:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      verified_at:
+        type: string
+    required:
+    - asset_id
+    - severity_level
+    - title
+    type: object
+  model.VulnerabilityAnalytics:
+    properties:
+      asset_vulnerability_distribution:
+        description: 资产漏洞分布
+        items:
+          $ref: '#/definitions/model.AssetVulnerabilityCount'
+        type: array
+      discoverer_stats:
+        description: 发现者统计
+        items:
+          $ref: '#/definitions/model.DiscovererCount'
+        type: array
+      fix_time_stats:
+        allOf:
+        - $ref: '#/definitions/model.FixTimeStats'
+        description: 修复时间统计
+      owasp_stats:
+        description: OWASP分类统计
+        items:
+          $ref: '#/definitions/model.OWASPCount'
+        type: array
+      severity_trend:
+        description: 严重程度趋势
+        items:
+          $ref: '#/definitions/model.SeverityTrendPoint'
+        type: array
+      status_distribution:
+        description: 状态分布
+        items:
+          $ref: '#/definitions/model.StatusCount'
+        type: array
+      time_range_stats:
+        allOf:
+        - $ref: '#/definitions/model.TimeRangeStats'
+        description: 时间范围统计
+    type: object
+  model.VulnerabilityAssignRequest:
+    properties:
+      assignee_id:
+        type: integer
+      assignment_reason:
+        type: string
+    required:
+    - assignee_id
+    type: object
+  model.VulnerabilityAttachment:
+    properties:
+      created_at:
+        type: string
+      file_path:
+        type: string
+      file_size:
+        type: integer
+      file_type:
+        type: string
+      filename:
+        type: string
+      id:
+        type: integer
+      original_name:
+        type: string
+      uploader:
+        allOf:
+        - $ref: '#/definitions/model.User'
+        description: 关联
+      uploader_id:
+        type: integer
+      vulnerability_id:
+        type: integer
+    type: object
+  model.VulnerabilityCreateRequest:
+    properties:
+      asset_id:
+        type: integer
+      assignee_id:
+        type: integer
+      cnvd_id:
+        type: string
+      cve_id:
+        type: string
+      cvss_score:
+        maximum: 10
+        minimum: 0
+        type: number
+      description:
+        type: string
+      fix_suggestion:
+        type: string
+      impact_scope:
+        type: string
+      owasp_category_id:
+        type: integer
+      reproduction_steps:
+        type: string
+      severity_level:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        type: integer
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - asset_id
+    - severity_level
+    - title
+    type: object
+  model.VulnerabilityInfo:
+    properties:
+      asset:
+        $ref: '#/definitions/model.AssetInfo'
+      asset_id:
+        type: integer
+      assigned_at:
+        type: string
+      assignee:
+        $ref: '#/definitions/model.UserInfo'
+      assignee_id:
+        type: integer
+      attachments:
+        items:
+          $ref: '#/definitions/model.VulnerabilityAttachment'
+        type: array
+      closed_at:
+        type: string
+      cnvd_id:
+        type: string
+      created_at:
+        type: string
+      cve_id:
+        type: string
+      cvss_score:
+        type: number
+      description:
+        type: string
+      discovered_at:
+        type: string
+      discoverer:
+        $ref: '#/definitions/model.UserInfo'
+      discoverer_id:
+        type: integer
+      fix_suggestion:
+        type: string
+      fixed_at:
+        type: string
+      id:
+        type: integer
+      impact_scope:
+        type: string
+      owasp_category:
+        $ref: '#/definitions/model.OWASPCategory'
+      owasp_category_id:
+        type: integer
+      reproduction_steps:
+        type: string
+      severity_level:
+        type: integer
+      severity_level_text:
+        type: string
+      status:
+        type: string
+      status_text:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      verified_at:
+        type: string
+    type: object
+  model.VulnerabilityStats:
+    properties:
+      by_asset_type:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_owasp:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_severity:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      by_status:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      recent_trend:
+        items:
+          $ref: '#/definitions/model.VulnerabilityTrendItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  model.VulnerabilityStatusStats:
+    properties:
+      closed:
+        type: integer
+      in_progress:
+        type: integer
+      open:
+        type: integer
+      reopened:
+        type: integer
+      resolved:
+        type: integer
+    type: object
+  model.VulnerabilityTrendItem:
+    properties:
+      count:
+        type: integer
+      date:
+        type: string
+    type: object
+  model.VulnerabilityTypeCount:
+    properties:
+      count:
+        type: integer
+      type:
+        type: string
+    type: object
+  model.VulnerabilityUpdateRequest:
+    properties:
+      assignee_id:
+        type: integer
+      cnvd_id:
+        type: string
+      cve_id:
+        type: string
+      cvss_score:
+        maximum: 10
+        minimum: 0
+        type: number
+      description:
+        type: string
+      fix_suggestion:
+        type: string
+      impact_scope:
+        type: string
+      owasp_category_id:
+        type: integer
+      reproduction_steps:
+        type: string
+      severity_level:
+        enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        type: integer
+      status:
+        enum:
+        - new
+        - processing
+        - fixed
+        - verified
+        - closed
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@vulnark.com
+    name: VulnArk Team
+    url: https://vulnark.com
+  description: VulnArk漏洞管理系统API文档
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://vulnark.com/terms
+  title: VulnArk API
+  version: 1.0.0
+paths:
+  /api/changelog:
+    get:
+      description: 获取API的版本变更历史记录
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties: true
+                    type: object
+                  type: array
+              type: object
+      summary: 获取API变更日志
+      tags:
+      - API版本管理
+  /api/health:
+    get:
+      description: 获取当前API的健康状态和运行信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: 获取API健康状态
+      tags:
+      - API版本管理
+  /api/metrics:
+    get:
+      description: 获取API的性能指标和使用统计
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取API指标
+      tags:
+      - API版本管理
+  /api/status:
+    get:
+      description: 获取API服务的实时状态信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: 获取API状态页面信息
+      tags:
+      - API版本管理
+  /api/v1/analytics/asset:
+    get:
+      description: 获取资产的详细分析数据，包括分布、风险评估等
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: day
+        description: 时间粒度 (day/week/month)
+        in: query
+        name: granularity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssetAnalytics'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产分析数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/asset/risk:
+    get:
+      description: 获取所有资产的风险评估数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.AssetRiskCount'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产风险评估
+      tags:
+      - 统计分析
+  /api/v1/analytics/dashboard:
+    get:
+      description: 获取系统总体统计数据，包括漏洞、资产、用户、报告等统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.DashboardStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取仪表盘统计数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/export:
+    post:
+      consumes:
+      - application/json
+      description: 导出统计分析数据为指定格式
+      parameters:
+      - description: 导出请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ExportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ExportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 导出数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/overview:
+    get:
+      description: 获取系统的整体概览信息，包括关键指标和趋势
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统概览
+      tags:
+      - 统计分析
+  /api/v1/analytics/report:
+    get:
+      description: 获取报告的详细分析数据，包括状态分布、类型分布等
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: day
+        description: 时间粒度 (day/week/month)
+        in: query
+        name: granularity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ReportAnalytics'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取报告分析数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/user:
+    get:
+      description: 获取用户的详细分析数据，包括角色分布、活动统计等
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: day
+        description: 时间粒度 (day/week/month)
+        in: query
+        name: granularity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserAnalytics'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户分析数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/vulnerability:
+    get:
+      description: 获取漏洞的详细分析数据，包括趋势、分布、统计等
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: day
+        description: 时间粒度 (day/week/month)
+        in: query
+        name: granularity
+        type: string
+      - description: 资产ID
+        in: query
+        name: asset_id
+        type: string
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: string
+      - description: 严重程度
+        in: query
+        name: severity
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      - description: 分类
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.VulnerabilityAnalytics'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞分析数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/vulnerability/severity-trend:
+    get:
+      description: 获取指定时间范围内各严重程度漏洞的趋势数据
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SeverityTrendPoint'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取严重程度趋势数据
+      tags:
+      - 统计分析
+  /api/v1/analytics/vulnerability/trend:
+    get:
+      description: 获取指定时间范围内的漏洞趋势数据
+      parameters:
+      - description: 开始日期 (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期 (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: day
+        description: 时间粒度 (day/week/month)
+        in: query
+        name: granularity
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TrendPoint'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞趋势数据
+      tags:
+      - 统计分析
+  /api/v1/api-test/docs:
+    get:
+      description: 获取系统API文档的基本信息和访问地址
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: 获取API文档信息
+      tags:
+      - API测试
+  /api/v1/api-test/endpoints:
+    get:
+      description: 获取系统所有可用的API端点信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controller.APIEndpoint'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取API端点列表
+      tags:
+      - API测试
+  /api/v1/api-test/test:
+    post:
+      consumes:
+      - application/json
+      description: 发送HTTP请求测试指定的API接口
+      parameters:
+      - description: API测试请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.APITestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.APITestResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 测试API接口
+      tags:
+      - API测试
+  /api/v1/api-test/token:
+    post:
+      description: 为当前用户生成API测试专用令牌
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 生成API测试令牌
+      tags:
+      - API测试
+  /api/v1/api-test/validate:
+    post:
+      consumes:
+      - application/json
+      description: 验证API请求的格式是否正确，不实际发送请求
+      parameters:
+      - description: API测试请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.APITestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 验证API请求格式
+      tags:
+      - API测试
+  /api/v1/assets:
+    get:
+      description: 获取资产列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 资产类型
+        in: query
+        name: type
+        type: string
+      - description: 资产分类
+        in: query
+        name: category
+        type: string
+      - description: 所属部门
+        in: query
+        name: department
+        type: string
+      - description: 重要性等级
+        in: query
+        name: importance_level
+        type: string
+      - description: 资产状态
+        in: query
+        name: status
+        type: string
+      - description: 负责人ID
+        in: query
+        name: owner_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产列表
+      tags:
+      - 资产管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的资产
+      parameters:
+      - description: 创建资产请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssetCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Asset'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建资产
+      tags:
+      - 资产管理
+  /api/v1/assets/{id}:
+    delete:
+      description: 删除资产
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除资产
+      tags:
+      - 资产管理
+    get:
+      description: 根据ID获取资产详情
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssetInfo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产详情
+      tags:
+      - 资产管理
+    put:
+      consumes:
+      - application/json
+      description: 更新资产信息
+      parameters:
+      - description: 资产ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssetUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新资产
+      tags:
+      - 资产管理
+  /api/v1/assets/import:
+    post:
+      consumes:
+      - application/json
+      description: 批量导入资产数据
+      parameters:
+      - description: 导入请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssetImportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量导入资产
+      tags:
+      - 资产管理
+  /api/v1/assets/importance-levels:
+    get:
+      description: 获取所有可用的重要性等级
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取重要性等级列表
+      tags:
+      - 资产管理
+  /api/v1/assets/stats:
+    get:
+      description: 获取资产统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssetStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产统计
+      tags:
+      - 资产管理
+  /api/v1/assets/types:
+    get:
+      description: 获取所有可用的资产类型
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资产类型列表
+      tags:
+      - 资产管理
+  /api/v1/assignment-rules:
+    get:
+      description: 获取分配规则列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 规则类型
+        in: query
+        name: rule_type
+        type: string
+      - description: 分配人ID
+        in: query
+        name: assignee_id
+        type: string
+      - description: 是否激活
+        in: query
+        name: is_active
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取分配规则列表
+      tags:
+      - 分配管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的漏洞分配规则
+      parameters:
+      - description: 创建分配规则请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssignmentRuleCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssignmentRule'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建分配规则
+      tags:
+      - 分配管理
+  /api/v1/assignment-rules/{id}:
+    delete:
+      description: 删除分配规则
+      parameters:
+      - description: 规则ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除分配规则
+      tags:
+      - 分配管理
+    get:
+      description: 根据ID获取分配规则详情
+      parameters:
+      - description: 规则ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssignmentRule'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取分配规则详情
+      tags:
+      - 分配管理
+    put:
+      consumes:
+      - application/json
+      description: 更新分配规则信息
+      parameters:
+      - description: 规则ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssignmentRuleUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新分配规则
+      tags:
+      - 分配管理
+  /api/v1/assignment-rules/types:
+    get:
+      description: 获取所有可用的分配规则类型
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取规则类型列表
+      tags:
+      - 分配管理
+  /api/v1/assignments/stats:
+    get:
+      description: 获取漏洞分配统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AssignmentStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取分配统计
+      tags:
+      - 分配管理
+  /api/v1/change-password:
+    post:
+      consumes:
+      - application/json
+      description: 修改当前登录用户的密码
+      parameters:
+      - description: 修改密码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 修改密码
+      tags:
+      - 用户管理
+  /api/v1/email-templates:
+    get:
+      description: 获取所有邮件模板
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.EmailTemplate'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取邮件模板列表
+      tags:
+      - 邮件模板
+    post:
+      consumes:
+      - application/json
+      description: 创建新的邮件模板
+      parameters:
+      - description: 创建邮件模板请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.EmailTemplateCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.EmailTemplate'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建邮件模板
+      tags:
+      - 邮件模板
+  /api/v1/email-templates/{id}:
+    delete:
+      description: 删除邮件模板
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除邮件模板
+      tags:
+      - 邮件模板
+    get:
+      description: 根据ID获取邮件模板详情
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.EmailTemplate'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取邮件模板详情
+      tags:
+      - 邮件模板
+    put:
+      consumes:
+      - application/json
+      description: 更新邮件模板信息
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.EmailTemplateUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新邮件模板
+      tags:
+      - 邮件模板
+  /api/v1/knowledge:
+    get:
+      description: 获取知识库列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 分类
+        in: query
+        name: category
+        type: string
+      - description: 类型
+        in: query
+        name: type
+        type: string
+      - description: 严重程度
+        in: query
+        name: severity
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      - description: 作者ID
+        in: query
+        name: author_id
+        type: string
+      - description: 标签
+        in: query
+        name: tags
+        type: string
+      - description: 排序字段
+        in: query
+        name: sort_by
+        type: string
+      - description: 是否降序
+        in: query
+        name: sort_desc
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取知识库列表
+      tags:
+      - 知识库管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的知识库条目
+      parameters:
+      - description: 创建知识库请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.KnowledgeCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.KnowledgeBase'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/{id}:
+    delete:
+      description: 删除知识库
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除知识库
+      tags:
+      - 知识库管理
+    get:
+      description: 根据ID获取知识库详情
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.KnowledgeBase'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取知识库详情
+      tags:
+      - 知识库管理
+    put:
+      consumes:
+      - application/json
+      description: 更新知识库信息
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.KnowledgeUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/{id}/archive:
+    post:
+      description: 归档知识库
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 归档知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/{id}/like:
+    post:
+      description: 为知识库点赞
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 点赞知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/{id}/publish:
+    post:
+      description: 发布知识库
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 发布知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/{id}/related:
+    get:
+      description: 获取与指定知识库相关的其他知识库
+      parameters:
+      - description: 知识库ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 5
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.KnowledgeBase'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取相关知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/popular:
+    get:
+      description: 获取热门知识库列表
+      parameters:
+      - default: 10
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.KnowledgeBase'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取热门知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/recent:
+    get:
+      description: 获取最新知识库列表
+      parameters:
+      - default: 10
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.KnowledgeBase'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取最新知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/search:
+    get:
+      description: 搜索知识库内容
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 10
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.KnowledgeBase'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 搜索知识库
+      tags:
+      - 知识库管理
+  /api/v1/knowledge/stats:
+    get:
+      description: 获取知识库统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.KnowledgeStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取知识库统计
+      tags:
+      - 知识库管理
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录接口
+      parameters:
+      - description: 登录请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserLoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 用户登录
+      tags:
+      - 用户管理
+  /api/v1/notifications:
+    get:
+      description: 获取通知列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 通知类型
+        in: query
+        name: type
+        type: string
+      - description: 通知级别
+        in: query
+        name: level
+        type: string
+      - description: 是否已读
+        in: query
+        name: is_read
+        type: string
+      - description: 接收人ID
+        in: query
+        name: recipient_id
+        type: string
+      - description: 开始日期
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取通知列表
+      tags:
+      - 通知管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的系统通知
+      parameters:
+      - description: 创建通知请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.NotificationCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Notification'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建通知
+      tags:
+      - 通知管理
+  /api/v1/notifications/{id}:
+    delete:
+      description: 删除指定通知
+      parameters:
+      - description: 通知ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除通知
+      tags:
+      - 通知管理
+    get:
+      description: 根据ID获取通知详情
+      parameters:
+      - description: 通知ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Notification'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取通知详情
+      tags:
+      - 通知管理
+  /api/v1/notifications/{id}/read:
+    post:
+      description: 标记指定通知为已读
+      parameters:
+      - description: 通知ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 标记通知为已读
+      tags:
+      - 通知管理
+  /api/v1/notifications/email:
+    post:
+      consumes:
+      - application/json
+      description: 发送邮件通知
+      parameters:
+      - description: 发送邮件请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.EmailSendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 发送邮件
+      tags:
+      - 通知管理
+  /api/v1/notifications/my:
+    get:
+      description: 获取当前用户的通知列表
+      parameters:
+      - default: 20
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Notification'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取我的通知
+      tags:
+      - 通知管理
+  /api/v1/notifications/read-all:
+    post:
+      description: 标记当前用户的所有通知为已读
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 标记所有通知为已读
+      tags:
+      - 通知管理
+  /api/v1/notifications/settings:
+    get:
+      description: 获取当前用户的通知设置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.NotificationSetting'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取通知设置
+      tags:
+      - 通知管理
+    put:
+      consumes:
+      - application/json
+      description: 更新当前用户的通知设置
+      parameters:
+      - description: 更新通知设置请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.NotificationSettingUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新通知设置
+      tags:
+      - 通知管理
+  /api/v1/notifications/stats:
+    get:
+      description: 获取当前用户的通知统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.NotificationStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取通知统计
+      tags:
+      - 通知管理
+  /api/v1/permissions:
+    get:
+      description: 获取所有权限列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Permission'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取权限列表
+      tags:
+      - 权限管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的系统权限
+      parameters:
+      - description: 创建权限请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PermissionCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Permission'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建权限
+      tags:
+      - 权限管理
+  /api/v1/permissions/{id}:
+    delete:
+      description: 删除权限
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除权限
+      tags:
+      - 权限管理
+    get:
+      description: 根据ID获取权限详情
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Permission'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取权限详情
+      tags:
+      - 权限管理
+    put:
+      consumes:
+      - application/json
+      description: 更新权限信息
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PermissionUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新权限
+      tags:
+      - 权限管理
+  /api/v1/permissions/check:
+    get:
+      description: 检查当前用户是否有指定权限
+      parameters:
+      - description: 权限名称
+        in: query
+        name: permission
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 检查权限
+      tags:
+      - 权限管理
+  /api/v1/permissions/module/{module}:
+    get:
+      description: 根据模块获取权限列表
+      parameters:
+      - description: 模块名称
+        in: path
+        name: module
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Permission'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 根据模块获取权限列表
+      tags:
+      - 权限管理
+  /api/v1/permissions/my:
+    get:
+      description: 获取当前用户的权限列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Permission'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取我的权限列表
+      tags:
+      - 权限管理
+  /api/v1/profile:
+    get:
+      description: 获取当前登录用户的资料
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户资料
+      tags:
+      - 用户管理
+    put:
+      consumes:
+      - application/json
+      description: 更新当前登录用户的资料
+      parameters:
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户资料
+      tags:
+      - 用户管理
+  /api/v1/public/configs:
+    get:
+      description: 获取可公开访问的系统配置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SystemConfig'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取公开配置列表
+      tags:
+      - 系统管理
+  /api/v1/public/system/info:
+    get:
+      description: 获取系统基本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+      summary: 获取系统信息
+      tags:
+      - 系统管理
+  /api/v1/reports:
+    get:
+      description: 获取报告列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 报告类型
+        in: query
+        name: type
+        type: string
+      - description: 严重程度
+        in: query
+        name: severity
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      - description: 上传者ID
+        in: query
+        name: uploader_id
+        type: string
+      - description: 资产ID
+        in: query
+        name: asset_id
+        type: string
+      - description: 标签
+        in: query
+        name: tag
+        type: string
+      - description: 开始日期
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取报告列表
+      tags:
+      - 报告管理
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传渗透测试报告文件（支持PDF、DOC、DOCX格式）
+      parameters:
+      - description: 报告文件（PDF、DOC、DOCX格式）
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 报告标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 报告描述
+        in: formData
+        name: description
+        type: string
+      - description: 报告类型
+        enum:
+        - penetration_test
+        - vulnerability_assessment
+        - security_audit
+        - compliance_check
+        - other
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 严重程度
+        enum:
+        - critical
+        - high
+        - medium
+        - low
+        - info
+        in: formData
+        name: severity
+        required: true
+        type: string
+      - description: 关联资产ID列表，逗号分隔
+        in: formData
+        name: asset_ids
+        type: string
+      - description: 标签列表，逗号分隔
+        in: formData
+        name: tags
+        type: string
+      - description: 测试日期，格式：2006-01-02
+        in: formData
+        name: test_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Report'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 上传渗透测试报告
+      tags:
+      - 报告管理
+  /api/v1/reports/{id}:
+    delete:
+      description: 删除报告
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除报告
+      tags:
+      - 报告管理
+    get:
+      description: 根据ID获取报告详情
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Report'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取报告详情
+      tags:
+      - 报告管理
+    put:
+      consumes:
+      - application/json
+      description: 更新报告信息
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ReportUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新报告
+      tags:
+      - 报告管理
+  /api/v1/reports/{id}/archive:
+    post:
+      description: 归档报告
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 归档报告
+      tags:
+      - 报告管理
+  /api/v1/reports/{id}/download:
+    get:
+      description: 获取报告下载链接
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 下载报告
+      tags:
+      - 报告管理
+  /api/v1/reports/{id}/review:
+    post:
+      consumes:
+      - application/json
+      description: 审核报告（通过或拒绝）
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 审核请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ReportReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 审核报告
+      tags:
+      - 报告管理
+  /api/v1/reports/{id}/submit:
+    post:
+      description: 提交报告进行审核
+      parameters:
+      - description: 报告ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 提交报告
+      tags:
+      - 报告管理
+  /api/v1/reports/stats:
+    get:
+      description: 获取报告统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ReportStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取报告统计
+      tags:
+      - 报告管理
+  /api/v1/roles:
+    get:
+      description: 获取所有角色列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Role'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取角色列表
+      tags:
+      - 角色管理
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建新角色
+      parameters:
+      - description: 创建角色请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RoleCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建角色
+      tags:
+      - 角色管理
+  /api/v1/roles/{id}:
+    delete:
+      description: 管理员删除角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除角色
+      tags:
+      - 角色管理
+    get:
+      description: 根据ID获取角色详情
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取角色详情
+      tags:
+      - 角色管理
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新角色信息
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RoleUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新角色
+      tags:
+      - 角色管理
+  /api/v1/roles/{role_id}/permissions:
+    get:
+      description: 获取指定角色的权限列表
+      parameters:
+      - description: 角色ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Permission'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取角色权限列表
+      tags:
+      - 权限管理
+    post:
+      consumes:
+      - application/json
+      description: 为角色分配权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      - description: 权限分配请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RolePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 分配角色权限
+      tags:
+      - 权限管理
+  /api/v1/system/audit-logs:
+    get:
+      description: 获取审计日志列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: string
+      - description: 用户名
+        in: query
+        name: username
+        type: string
+      - description: 操作动作
+        in: query
+        name: action
+        type: string
+      - description: 资源类型
+        in: query
+        name: resource
+        type: string
+      - description: 请求方法
+        in: query
+        name: method
+        type: string
+      - description: 响应状态
+        in: query
+        name: status
+        type: string
+      - description: IP地址
+        in: query
+        name: ip
+        type: string
+      - description: 开始日期
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取审计日志列表
+      tags:
+      - 系统管理
+  /api/v1/system/audit-logs/{id}:
+    get:
+      description: 根据ID获取审计日志详情
+      parameters:
+      - description: 日志ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AuditLog'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取审计日志详情
+      tags:
+      - 系统管理
+  /api/v1/system/audit-logs/cleanup:
+    post:
+      description: 清理指定天数之前的审计日志
+      parameters:
+      - description: 保留天数
+        in: query
+        name: days
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 清理审计日志
+      tags:
+      - 系统管理
+  /api/v1/system/audit-logs/stats:
+    get:
+      description: 获取审计日志统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取审计日志统计
+      tags:
+      - 系统管理
+  /api/v1/system/configs:
+    get:
+      description: 获取所有系统配置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SystemConfig'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统配置列表
+      tags:
+      - 系统管理
+  /api/v1/system/configs/{key}:
+    get:
+      description: 根据键获取系统配置详情
+      parameters:
+      - description: 配置键
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.SystemConfig'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取系统配置详情
+      tags:
+      - 系统管理
+    put:
+      consumes:
+      - application/json
+      description: 更新系统配置值
+      parameters:
+      - description: 配置键
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SystemConfigUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新系统配置
+      tags:
+      - 系统管理
+  /api/v1/system/configs/category/{category}:
+    get:
+      description: 根据分类获取系统配置列表
+      parameters:
+      - description: 配置分类
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.SystemConfig'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 根据分类获取配置列表
+      tags:
+      - 系统管理
+  /api/v1/tags:
+    get:
+      description: 获取所有标签列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Tag'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取标签列表
+      tags:
+      - 标签管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的标签
+      parameters:
+      - description: 创建标签请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TagCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Tag'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建标签
+      tags:
+      - 标签管理
+  /api/v1/tags/{id}:
+    delete:
+      description: 删除标签
+      parameters:
+      - description: 标签ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除标签
+      tags:
+      - 标签管理
+    get:
+      description: 根据ID获取标签详情
+      parameters:
+      - description: 标签ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Tag'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取标签详情
+      tags:
+      - 标签管理
+    put:
+      consumes:
+      - application/json
+      description: 更新标签信息
+      parameters:
+      - description: 标签ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TagUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新标签
+      tags:
+      - 标签管理
+  /api/v1/tags/popular:
+    get:
+      description: 获取热门标签列表
+      parameters:
+      - default: 20
+        description: 限制数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Tag'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取热门标签
+      tags:
+      - 标签管理
+  /api/v1/templates:
+    get:
+      description: 获取所有模板列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Template'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取模板列表
+      tags:
+      - 模板管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的模板
+      parameters:
+      - description: 创建模板请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TemplateCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Template'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建模板
+      tags:
+      - 模板管理
+  /api/v1/templates/{id}:
+    delete:
+      description: 删除模板
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除模板
+      tags:
+      - 模板管理
+    get:
+      description: 根据ID获取模板详情
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Template'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取模板详情
+      tags:
+      - 模板管理
+    put:
+      consumes:
+      - application/json
+      description: 更新模板信息
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TemplateUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新模板
+      tags:
+      - 模板管理
+  /api/v1/templates/{id}/use:
+    post:
+      description: 使用模板（增加使用次数）
+      parameters:
+      - description: 模板ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 使用模板
+      tags:
+      - 模板管理
+  /api/v1/users:
+    get:
+      description: 获取用户列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 用户状态
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户列表
+      tags:
+      - 用户管理
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建新用户
+      parameters:
+      - description: 创建用户请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建用户
+      tags:
+      - 用户管理
+  /api/v1/users/{id}:
+    delete:
+      description: 管理员删除用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除用户
+      tags:
+      - 用户管理
+    get:
+      description: 根据ID获取用户详情
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserInfo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户详情
+      tags:
+      - 用户管理
+    put:
+      consumes:
+      - application/json
+      description: 管理员更新用户信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户
+      tags:
+      - 用户管理
+  /api/v1/vulnerabilities:
+    get:
+      description: 获取漏洞列表（分页）
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 严重程度
+        in: query
+        name: severity_level
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      - description: 资产ID
+        in: query
+        name: asset_id
+        type: string
+      - description: 分配人ID
+        in: query
+        name: assignee_id
+        type: string
+      - description: 发现人ID
+        in: query
+        name: discoverer_id
+        type: string
+      - description: OWASP分类ID
+        in: query
+        name: owasp_category_id
+        type: string
+      - description: 开始日期
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PaginationResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞列表
+      tags:
+      - 漏洞管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的漏洞
+      parameters:
+      - description: 创建漏洞请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.VulnerabilityCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Vulnerability'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建漏洞
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/{id}:
+    delete:
+      description: 删除漏洞
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除漏洞
+      tags:
+      - 漏洞管理
+    get:
+      description: 根据ID获取漏洞详情
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.VulnerabilityInfo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞详情
+      tags:
+      - 漏洞管理
+    put:
+      consumes:
+      - application/json
+      description: 更新漏洞信息
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.VulnerabilityUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新漏洞
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/{id}/assign:
+    post:
+      consumes:
+      - application/json
+      description: 分配漏洞给指定用户
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 分配请求
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 分配漏洞
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: 更新漏洞状态
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 状态更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新漏洞状态
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/{id}/timeline:
+    get:
+      description: 获取指定漏洞的完整时间线
+      parameters:
+      - description: 漏洞ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TimelineEntry'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞时间线
+      tags:
+      - 分配管理
+  /api/v1/vulnerabilities/auto-assign:
+    post:
+      consumes:
+      - application/json
+      description: 根据分配规则自动分配漏洞
+      parameters:
+      - description: 自动分配请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AutoAssignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 自动分配漏洞
+      tags:
+      - 分配管理
+  /api/v1/vulnerabilities/batch-assign:
+    post:
+      consumes:
+      - application/json
+      description: 批量分配多个漏洞给指定用户
+      parameters:
+      - description: 批量分配请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.BatchAssignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量分配漏洞
+      tags:
+      - 分配管理
+  /api/v1/vulnerabilities/owasp-categories:
+    get:
+      description: 获取所有OWASP分类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.OWASPCategory'
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取OWASP分类列表
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/severity-levels:
+    get:
+      description: 获取所有可用的严重程度
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties: true
+                    type: object
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取严重程度列表
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/stats:
+    get:
+      description: 获取漏洞统计信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.VulnerabilityStats'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取漏洞统计
+      tags:
+      - 漏洞管理
+  /api/v1/vulnerabilities/status-list:
+    get:
+      description: 获取所有可用的状态
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  type: array
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取状态列表
+      tags:
+      - 漏洞管理
+  /api/versions:
+    get:
+      description: 获取系统支持的所有API版本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.APIVersionInfo'
+              type: object
+      summary: 获取API版本信息
+      tags:
+      - API版本管理
+  /api/versions/{version}:
+    get:
+      description: 获取指定API版本的详细信息
+      parameters:
+      - description: API版本号
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.APIVersion'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取特定版本详情
+      tags:
+      - API版本管理
+  /api/versions/compatibility:
+    get:
+      description: 获取不同API版本之间的兼容性信息
+      parameters:
+      - description: 源版本
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: 目标版本
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.APICompatibility'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: 获取版本兼容性信息
+      tags:
+      - API版本管理
+securityDefinitions:
+  ApiKeyAuth:
+    description: Bearer token authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

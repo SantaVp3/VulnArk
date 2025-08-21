@@ -1,0 +1,49 @@
+# VulnArk 配置文件
+# ⚠️  安全提醒：
+# 1. 请修改默认的JWT密钥和数据库密码
+# 2. 生产环境请将server.mode设置为"release"
+# 3. 确保此配置文件的权限设置为600 (chmod 600 config.yaml)
+# 4. 不要将包含真实密码的配置文件提交到版本控制系统
+
+server:
+  port: "8080"
+  mode: "release"  # debug, release, test - 生产环境请使用release
+  read_timeout: 60
+  write_timeout: 60
+
+database:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "your-secure-database-password-here"  # ⚠️ 请修改为安全的密码
+  database: "vulnark"
+  charset: "utf8mb4"
+
+jwt:
+  secret: "your-jwt-secret-key-at-least-32-characters-long-for-security"  # ⚠️ 请修改为安全的密钥
+  expire_time: 3600  # 1小时
+
+oss:
+  provider: "local"  # local, aliyun, aws
+  access_key_id: ""  # 如使用云存储，请填入访问密钥ID
+  access_key_secret: ""  # 如使用云存储，请填入访问密钥Secret
+  bucket: "vulnark-files"
+  endpoint: ""  # 云存储服务端点
+  region: ""    # 云存储区域
+
+email:
+  host: "smtp.qq.com"
+  port: 587
+  username: ""  # 邮件服务用户名
+  password: ""  # 邮件服务密码
+  from: ""      # 发件人邮箱地址
+
+storage:
+  type: "local"  # local, oss, s3
+  local_path: "./uploads"  # 本地存储路径
+  base_url: "http://localhost:8080/uploads"  # 文件访问基础URL
+
+log:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, text
+  output: "stdout"  # stdout, file
