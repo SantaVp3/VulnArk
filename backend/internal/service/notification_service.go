@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"vulnark/internal/config"
 	"vulnark/internal/model"
 	"vulnark/internal/repository"
 	"vulnark/pkg/email"
@@ -409,7 +410,7 @@ func (s *notificationService) NotifyVulnerabilityAssigned(vulnID uint, assigneeI
 			"Severity":            fmt.Sprintf("%d级", vulnerability.SeverityLevel),
 			"DiscoveredAt":        vulnerability.CreatedAt.Format("2006-01-02 15:04:05"),
 			"AssignerName":        assigner.RealName,
-			"SystemURL":           "http://localhost:8080", // TODO: 从配置获取
+			"SystemURL":           fmt.Sprintf("http://%s:%s", config.AppConfig.Server.Host, config.AppConfig.Server.Port),
 		}
 		s.SendTemplateEmail("vulnerability_assigned", []string{assignee.Email}, variables, &assignerID)
 	}

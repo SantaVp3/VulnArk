@@ -18,11 +18,12 @@ type Config struct {
 	Storage  StorageConfig  `mapstructure:"storage"`
 	Email    EmailConfig    `mapstructure:"email"`
 	Log      LogConfig      `mapstructure:"log"`
-
+	CORS     CORSConfig     `mapstructure:"cors"`
 }
 
 // ServerConfig 服务器配置
 type ServerConfig struct {
+	Host         string `mapstructure:"host"`
 	Port         string `mapstructure:"port"`
 	Mode         string `mapstructure:"mode"`
 	ReadTimeout  int    `mapstructure:"read_timeout"`
@@ -156,6 +157,17 @@ func validateConfig() error {
 	}
 
 	return nil
+}
+
+// CORSConfig CORS跨域配置
+type CORSConfig struct {
+	Enabled          bool     `mapstructure:"enabled"`
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowedMethods   []string `mapstructure:"allowed_methods"`
+	AllowedHeaders   []string `mapstructure:"allowed_headers"`
+	ExposedHeaders   []string `mapstructure:"exposed_headers"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
+	MaxAge           int      `mapstructure:"max_age"`
 }
 
 // GetEnv 获取环境变量，如果不存在则返回默认值

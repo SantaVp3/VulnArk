@@ -1,0 +1,96 @@
+# VulnArk 生产环境配置文件
+# 复制此文件并重命名为 config.yaml 以在生产环境中使用
+
+# 应用基本信息
+app:
+  name: "VulnArk"
+  version: "1.0.0"
+  description: "漏洞管理平台"
+
+# 服务器配置
+server:
+  host: ""  # 生产环境监听所有接口
+  port: "8080"
+  mode: "release"  # 生产模式
+  read_timeout: 60
+  write_timeout: 60
+
+# CORS跨域配置 - 生产环境（更严格的安全设置）
+cors:
+  enabled: true
+  allowed_origins:
+    - "https://your-domain.com"      # 替换为您的实际域名
+    - "https://www.your-domain.com"  # 替换为您的实际域名
+    - "http://10.211.55.6:8080"      # 当前部署IP（根据实际情况修改）
+  allowed_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "PATCH"
+    - "DELETE"
+    - "HEAD"
+    - "OPTIONS"
+  allowed_headers:
+    - "Origin"
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+    - "X-Requested-With"
+    - "Accept"
+  exposed_headers:
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+  allow_credentials: true
+  max_age: 86400  # 24小时，生产环境较长
+
+# 数据库配置
+database:
+  host: "localhost"
+  port: 3306
+  username: "vulnark_user"  # 生产环境建议使用专用用户
+  password: "your-secure-password"  # 请使用强密码
+  database: "vulnark"
+  charset: "utf8mb4"
+  parse_time: true
+  loc: "Local"
+  max_idle_conns: 20
+  max_open_conns: 200
+  conn_max_lifetime: 7200
+
+# JWT配置
+jwt:
+  secret: "your-very-secure-jwt-secret-key-at-least-32-characters"  # 请使用强密钥
+  expire_time: 28800  # 8小时，生产环境较短
+
+# OSS配置
+oss:
+  endpoint: ""
+  access_key_id: ""
+  access_key_secret: ""
+  bucket_name: ""
+
+# 存储配置
+storage:
+  type: "local"
+  local_path: "./uploads"
+  base_url: "http://10.211.55.6:8080/uploads"  # 根据实际部署地址修改
+
+# 邮件配置
+email:
+  smtp_host: "smtp.your-provider.com"
+  smtp_port: 587
+  username: "your-email@your-domain.com"
+  password: "your-email-password"
+  from: "noreply@your-domain.com"
+
+# 日志配置
+log:
+  level: "info"  # 生产环境使用info级别
+  format: "json"
+  output: "file"
+  file_path: "./logs/app.log"
+  max_size: 500
+  max_backups: 10
+  max_age: 30
+  compress: true

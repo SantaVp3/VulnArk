@@ -54,6 +54,7 @@ func SetupRoutes(r *gin.Engine) {
 			})
 			public.GET("/configs", systemController.GetPublicConfigs)
 			public.GET("/system/info", systemController.GetSystemInfo)
+			public.GET("/client-config", systemController.GetClientConfig)
 		}
 
 		// 认证接口（添加登录速率限制）
@@ -72,12 +73,16 @@ func SetupRoutes(r *gin.Engine) {
 			users := auth.Group("/users")
 			users.Use(middleware.RequirePermission("user:manage"))
 			{
+				users.GET("/departments", userController.GetDepartmentOptions) // 部门选项
 				users.POST("", userController.CreateUser)
 				users.GET("", userController.GetUserList)
 				users.GET("/:id", userController.GetUser)
 				users.PUT("/:id", userController.UpdateUser)
 				users.DELETE("/:id", userController.DeleteUser)
 			}
+
+			// 角色选项（用于用户创建，需要用户管理权限）
+			auth.GET("/roles/options", middleware.RequirePermission("user:manage"), roleController.GetRoleOptions)
 
 			// 角色管理（需要管理员权限）
 			roles := auth.Group("/roles")
@@ -92,7 +97,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 资产管理
 			assets := auth.Group("/assets")
-			// assets.Use(middleware.RequirePermission("asset:manage")) // TODO: 实现权限中间件
+			assets.Use(middleware.RequirePermission("asset:read")) // 基础权限检查
 			{
 				assets.POST("", assetController.CreateAsset)
 				assets.GET("", assetController.GetAssetList)
@@ -107,7 +112,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 漏洞管理
 			vulnerabilities := auth.Group("/vulnerabilities")
-			// vulnerabilities.Use(middleware.RequirePermission("vulnerability:manage")) // TODO: 实现权限中间件
+			vulnerabilities.Use(middleware.RequirePermission("vuln:read")) // 基础权限检查
 			{
 				vulnerabilities.POST("", vulnController.CreateVulnerability)
 				vulnerabilities.GET("", vulnController.GetVulnerabilityList)
@@ -127,7 +132,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 分配规则管理
 			assignmentRules := auth.Group("/assignment-rules")
-			// assignmentRules.Use(middleware.RequirePermission("assignment:manage")) // TODO: 实现权限中间件
+			assignmentRules.Use(middleware.RequirePermission("vuln:manage")) // 分配权限检查
 			{
 				assignmentRules.POST("", assignmentController.CreateAssignmentRule)
 				assignmentRules.GET("", assignmentController.GetAssignmentRuleList)

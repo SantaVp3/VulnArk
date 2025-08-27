@@ -283,3 +283,30 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 
 	utils.SuccessResponse(ctx, nil)
 }
+
+// GetDepartmentOptions 获取部门选项
+// @Summary 获取部门选项
+// @Description 获取可用的部门选项列表
+// @Tags 用户管理
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} model.Response{data=[]map[string]string}
+// @Router /api/v1/users/departments [get]
+func (c *UserController) GetDepartmentOptions(ctx *gin.Context) {
+	departments := []map[string]string{
+		{"value": "IT部门", "label": "IT部门"},
+		{"value": "安全部门", "label": "安全部门"},
+		{"value": "开发部门", "label": "开发部门"},
+		{"value": "测试部门", "label": "测试部门"},
+		{"value": "运维部门", "label": "运维部门"},
+		{"value": "产品部门", "label": "产品部门"},
+		{"value": "设计部门", "label": "设计部门"},
+		{"value": "市场部门", "label": "市场部门"},
+		{"value": "销售部门", "label": "销售部门"},
+		{"value": "人事部门", "label": "人事部门"},
+		{"value": "财务部门", "label": "财务部门"},
+		{"value": "法务部门", "label": "法务部门"},
+	}
+
+	utils.SuccessResponse(ctx, departments)
+}

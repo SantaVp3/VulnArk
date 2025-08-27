@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -295,4 +296,42 @@ func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 	systemInfo["author"] = "VulnArk Team"
 
 	utils.SuccessResponse(ctx, systemInfo)
+}
+
+// GetClientConfig 获取客户端配置
+// @Summary 获取客户端配置
+// @Description 获取前端客户端需要的配置信息
+// @Tags 系统管理
+// @Produce json
+// @Success 200 {object} model.Response{data=map[string]interface{}}
+// @Router /api/v1/public/client-config [get]
+func (c *SystemController) GetClientConfig(ctx *gin.Context) {
+	// 获取当前请求的Host信息
+	host := ctx.Request.Host
+	scheme := "http"
+	if ctx.Request.TLS != nil {
+		scheme = "https"
+	}
+
+	// 如果是通过代理访问，尝试获取原始Host
+	if forwardedHost := ctx.GetHeader("X-Forwarded-Host"); forwardedHost != "" {
+		host = forwardedHost
+	}
+	if forwardedProto := ctx.GetHeader("X-Forwarded-Proto"); forwardedProto != "" {
+		scheme = forwardedProto
+	}
+
+	clientConfig := map[string]interface{}{
+		"apiBaseURL": fmt.Sprintf("%s://%s/api/v1", scheme, host),
+		"version":    "1.0.0",
+		"appName":    "VulnArk",
+		"features": map[string]bool{
+			"aiAssistant":    true,
+			"fileUpload":     true,
+			"notifications":  true,
+			"reports":        true,
+		},
+	}
+
+	utils.SuccessResponse(ctx, clientConfig)
 }

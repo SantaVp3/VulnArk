@@ -6,10 +6,40 @@
 # 4. 不要将包含真实密码的配置文件提交到版本控制系统
 
 server:
+  host: ""  # 空字符串表示监听所有接口（IPv4和IPv6）
   port: "8080"
   mode: "release"  # debug, release, test - 生产环境请使用release
   read_timeout: 60
   write_timeout: 60
+
+# CORS跨域配置
+cors:
+  enabled: true  # 是否启用CORS
+  allowed_origins:
+    - "http://10.211.55.6:8080"  # 生产环境访问地址
+    - "http://localhost:8080"    # 本地访问地址
+    - "http://127.0.0.1:8080"    # 本地回环地址
+  allowed_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "PATCH"
+    - "DELETE"
+    - "HEAD"
+    - "OPTIONS"
+  allowed_headers:
+    - "Origin"
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+    - "X-Requested-With"
+    - "Accept"
+  exposed_headers:
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+  allow_credentials: true
+  max_age: 43200  # 12小时 (12 * 60 * 60)
 
 database:
   host: "localhost"
@@ -41,7 +71,7 @@ email:
 storage:
   type: "local"  # local, oss, s3
   local_path: "./uploads"  # 本地存储路径
-  base_url: "http://localhost:8080/uploads"  # 文件访问基础URL
+  base_url: "http://0.0.0.0:8080/uploads"  # 文件访问基础URL
 
 log:
   level: "info"  # debug, info, warn, error

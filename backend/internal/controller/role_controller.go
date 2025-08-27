@@ -151,3 +151,32 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 
 	utils.SuccessResponse(ctx, nil)
 }
+
+// GetRoleOptions 获取角色选项（用于用户创建）
+// @Summary 获取角色选项
+// @Description 获取可用于用户创建的角色选项列表
+// @Tags 角色管理
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} model.Response{data=[]model.RoleOption}
+// @Failure 500 {object} model.Response
+// @Router /api/v1/roles/options [get]
+func (c *RoleController) GetRoleOptions(ctx *gin.Context) {
+	roles, err := c.roleService.GetRoleList()
+	if err != nil {
+		utils.ServerErrorResponse(ctx, err.Error())
+		return
+	}
+
+	// 转换为选项格式
+	options := make([]map[string]interface{}, 0, len(roles))
+	for _, role := range roles {
+		options = append(options, map[string]interface{}{
+			"value": role.ID,
+			"label": role.Name,
+			"description": role.Description,
+		})
+	}
+
+	utils.SuccessResponse(ctx, options)
+}

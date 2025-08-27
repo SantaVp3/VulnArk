@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 
 	"vulnark/internal/model"
 	"vulnark/internal/repository"
@@ -34,6 +35,7 @@ type permissionService struct {
 	permissionRepo     repository.PermissionRepository
 	rolePermissionRepo repository.RolePermissionRepository
 	roleRepo           repository.RoleRepository
+	userRepo           repository.UserRepository
 }
 
 // NewPermissionService 创建权限服务
@@ -42,6 +44,7 @@ func NewPermissionService() PermissionService {
 		permissionRepo:     repository.NewPermissionRepository(),
 		rolePermissionRepo: repository.NewRolePermissionRepository(),
 		roleRepo:           repository.NewRoleRepository(),
+		userRepo:           repository.NewUserRepository(),
 	}
 }
 
@@ -149,7 +152,40 @@ func (s *permissionService) GetUserPermissions(userID uint) ([]*model.Permission
 
 // CheckUserPermission 检查用户权限（支持权限代码和权限名称）
 func (s *permissionService) CheckUserPermission(userID uint, permissionName string) (bool, error) {
-	// 获取用户权限
+	// 获取用户信息和角色
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return false, err
+	}
+
+	// 获取用户角色
+	role, err := s.roleRepo.GetByID(user.RoleID)
+	if err != nil {
+		return false, err
+	}
+
+	// 检查角色权限
+	for _, perm := range role.Permissions {
+		// 检查通配符权限
+		if perm == "*" {
+			return true, nil
+		}
+
+		// 检查精确匹配
+		if perm == permissionName {
+			return true, nil
+		}
+
+		// 检查模块级通配符 (如 "user:*" 匹配 "user:create")
+		if strings.HasSuffix(perm, ":*") {
+			module := strings.TrimSuffix(perm, ":*")
+			if strings.HasPrefix(permissionName, module+":") {
+				return true, nil
+			}
+		}
+	}
+
+	// 获取用户权限（从权限表）
 	permissions, err := s.GetUserPermissions(userID)
 	if err != nil {
 		return false, err

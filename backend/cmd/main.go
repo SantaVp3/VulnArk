@@ -31,7 +31,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host 0.0.0.0:8080
 // @BasePath /
 
 // @securityDefinitions.apikey ApiKeyAuth
@@ -83,6 +83,12 @@ func main() {
 	r.Static("/assets", "../web/assets")
 	r.StaticFile("/vite.svg", "../web/vite.svg")
 
+	// 配置JavaScript文件的正确MIME类型
+	r.GET("/config.js", func(c *gin.Context) {
+		c.Header("Content-Type", "application/javascript; charset=utf-8")
+		c.File("../web/config.js")
+	})
+
 	// 处理前端路由 - 所有非API请求都返回index.html
 	r.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
@@ -96,8 +102,13 @@ func main() {
 	})
 
 	// 启动服务器
+	host := config.AppConfig.Server.Host
+	if host == "" {
+		host = "0.0.0.0" // 确保监听所有IPv4接口
+	}
+	addr := host + ":" + config.AppConfig.Server.Port
 	srv := &http.Server{
-		Addr:         ":" + config.AppConfig.Server.Port,
+		Addr:         addr,
 		Handler:      r,
 		ReadTimeout:  time.Duration(config.AppConfig.Server.ReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(config.AppConfig.Server.WriteTimeout) * time.Second,
@@ -105,7 +116,7 @@ func main() {
 
 	// 在goroutine中启动服务器
 	go func() {
-		logger.Infof("服务器启动在端口 %s", config.AppConfig.Server.Port)
+		logger.Infof("服务器启动在 %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Fatalf("服务器启动失败: %v", err)
 		}

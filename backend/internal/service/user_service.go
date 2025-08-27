@@ -334,34 +334,72 @@ func (s *roleService) UpdateRole(roleID uint, req *model.RoleUpdateRequest) erro
 
 // DeleteRole 删除角色
 func (s *roleService) DeleteRole(roleID uint) error {
+	// 防止删除系统默认角色
+	if roleID <= 3 {
+		return errors.New("不能删除系统默认角色")
+	}
+
+	// 检查角色是否存在
+	_, err := s.roleRepo.GetByID(roleID)
+	if err != nil {
+		return err
+	}
+
+	// 检查是否有用户使用该角色
+	// 这个检查已经在 repository 层实现了，但我们在这里再次确认
 	return s.roleRepo.Delete(roleID)
 }
 
 // GetRoleList 获取角色列表
 func (s *roleService) GetRoleList() ([]*model.Role, error) {
-	// Return only the three allowed roles
-	allowedRoles := []*model.Role{
+	// 从数据库获取角色列表
+	roles, err := s.roleRepo.List()
+	if err != nil {
+		return nil, err
+	}
+
+	// 如果数据库中没有角色，创建默认角色
+	if len(roles) == 0 {
+		if err := s.createDefaultRoles(); err != nil {
+			return nil, err
+		}
+		// 重新获取角色列表
+		roles, err = s.roleRepo.List()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return roles, nil
+}
+
+// createDefaultRoles 创建默认角色
+func (s *roleService) createDefaultRoles() error {
+	defaultRoles := []*model.Role{
 		{
-			ID:          1,
 			Name:        "管理员",
 			Description: "系统管理员，拥有所有权限",
 			Permissions: []string{"*"}, // All permissions
 		},
 		{
-			ID:          2,
 			Name:        "开发工程师",
 			Description: "开发工程师，可以管理漏洞和资产",
 			Permissions: []string{"vulnerability:*", "asset:*", "report:read", "knowledge:*"},
 		},
 		{
-			ID:          3,
 			Name:        "普通用户",
 			Description: "普通用户，只能查看和提交漏洞",
 			Permissions: []string{"vulnerability:read", "vulnerability:create", "asset:read", "report:read", "knowledge:read"},
 		},
 	}
 
-	return allowedRoles, nil
+	for _, role := range defaultRoles {
+		if err := s.roleRepo.Create(role); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // GetRoleByID 根据ID获取角色
