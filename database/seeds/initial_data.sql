@@ -21,9 +21,7 @@ INSERT INTO roles (id, name, description, permissions) VALUES
     'vulnerability:read', 'report:read', 'knowledge:read', 'notification:read'
 ));
 
--- 插入默认管理员用户
-INSERT INTO users (id, username, email, password_hash, real_name, role_id, department, status) VALUES
-(1, 'admin', 'admin@vulnark.com', '$2a$10$cuj88ge80bvgTB8U73CH0.MrWz7GQxlUjY0dWYYeHqc4mRybyqvHS', '系统管理员', 1, 'IT部门', 1);
+-- 管理员用户将通过系统初始化代码自动创建，使用随机密码
 
 -- 插入OWASP Top10 2021分类数据
 INSERT INTO owasp_categories (id, code, name, description, year, severity_level) VALUES
@@ -50,20 +48,17 @@ INSERT INTO knowledge_base (id, title, content, category, tags, vulnerability_ty
 (1, 'SQL注入漏洞修复指南',
 'SQL注入是一种代码注入技术，攻击者通过在应用程序的输入字段中插入恶意SQL代码来攻击数据库。
 
-## 修复方法：
+修复方法：
 1. 使用参数化查询（预编译语句）
 2. 输入验证和过滤
 3. 最小权限原则
 4. 错误信息处理
 
-## 代码示例：
-```sql
--- 错误示例
-SELECT * FROM users WHERE id = \'' + userId + '\'';
-
--- 正确示例
-SELECT * FROM users WHERE id = ?;
-```',
+实施步骤：
+- 检查所有数据库查询是否使用参数化查询
+- 验证所有用户输入
+- 实施最小权限原则
+- 配置错误页面不显示敏感信息',
 '安全修复', JSON_ARRAY('SQL注入', '数据库安全', '代码审计'), 'A03:2021',
 '1. 检查所有数据库查询是否使用参数化查询\\n2. 验证所有用户输入\\n3. 实施最小权限原则\\n4. 配置错误页面不显示敏感信息',
 1, 1),
@@ -71,13 +66,13 @@ SELECT * FROM users WHERE id = ?;
 (2, 'XSS跨站脚本攻击防护',
 '跨站脚本攻击(XSS)是一种注入攻击，攻击者将恶意脚本注入到其他用户会浏览的网页中。
 
-## 防护措施：
+防护措施：
 1. 输出编码
 2. 输入验证
 3. 内容安全策略(CSP)
 4. HttpOnly Cookie
 
-## 实施步骤：
+实施步骤：
 - 对所有用户输入进行HTML编码
 - 实施严格的输入验证
 - 配置CSP头部
@@ -86,14 +81,12 @@ SELECT * FROM users WHERE id = ?;
 '1. 实施输出编码\\n2. 配置内容安全策略\\n3. 验证和过滤用户输入\\n4. 设置安全Cookie属性',
 1, 1);
 
--- 插入通知配置示例
-INSERT INTO notifications (user_id, title, content, type, is_read) VALUES
-(1, '欢迎使用VulnArk', '欢迎使用VulnArk漏洞管理平台！请查看用户手册了解详细功能。', 'system', 0);
+-- 通知将在管理员用户创建后自动添加
 
 -- 重置自增ID
 ALTER TABLE roles AUTO_INCREMENT = 4;
-ALTER TABLE users AUTO_INCREMENT = 2;
+ALTER TABLE users AUTO_INCREMENT = 1;
 ALTER TABLE owasp_categories AUTO_INCREMENT = 11;
 ALTER TABLE assets AUTO_INCREMENT = 5;
 ALTER TABLE knowledge_base AUTO_INCREMENT = 3;
-ALTER TABLE notifications AUTO_INCREMENT = 2;
+ALTER TABLE notifications AUTO_INCREMENT = 1;

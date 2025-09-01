@@ -175,17 +175,68 @@ func (s *migrationService) ExecuteSQLFile(filePath string) error {
 
 // splitSQLStatements 分割SQL语句
 func (s *migrationService) splitSQLStatements(content string) []string {
-	// 简单的SQL语句分割（按分号分割）
-	statements := strings.Split(content, ";")
-	
 	var result []string
-	for _, stmt := range statements {
-		stmt = strings.TrimSpace(stmt)
+	var currentStatement strings.Builder
+	var inMultiLineComment bool
+
+	lines := strings.Split(content, "\n")
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+
+		// 跳过空行
+		if line == "" {
+			continue
+		}
+
+		// 跳过单行注释
+		if strings.HasPrefix(line, "--") {
+			continue
+		}
+
+		// 处理多行注释
+		if strings.Contains(line, "/*") && strings.Contains(line, "*/") {
+			// 单行内的多行注释，跳过
+			continue
+		}
+		if strings.Contains(line, "/*") {
+			inMultiLineComment = true
+			continue
+		}
+		if strings.Contains(line, "*/") {
+			inMultiLineComment = false
+			continue
+		}
+		if inMultiLineComment {
+			continue
+		}
+
+		// 添加到当前语句
+		if currentStatement.Len() > 0 {
+			currentStatement.WriteString(" ")
+		}
+		currentStatement.WriteString(line)
+
+		// 检查是否语句结束（以分号结尾且不在字符串中）
+		if strings.HasSuffix(line, ";") {
+			stmt := strings.TrimSpace(currentStatement.String())
+			if stmt != "" && !strings.HasPrefix(stmt, "--") {
+				// 移除末尾的分号
+				stmt = strings.TrimSuffix(stmt, ";")
+				result = append(result, stmt)
+			}
+			currentStatement.Reset()
+		}
+	}
+
+	// 处理最后一个语句（如果没有分号结尾）
+	if currentStatement.Len() > 0 {
+		stmt := strings.TrimSpace(currentStatement.String())
 		if stmt != "" && !strings.HasPrefix(stmt, "--") {
 			result = append(result, stmt)
 		}
 	}
-	
+
 	return result
 }
 

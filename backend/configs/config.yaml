@@ -44,8 +44,8 @@ cors:
 database:
   host: "localhost"
   port: 3306
-  username: "vulnark"
-  password: "vulnark123"  # ⚠️ 请修改为您的数据库密码
+  username: "root"
+  password: "vulnark123"  # MySQL root密码
   database: "vulnark"
   charset: "utf8mb4"
 

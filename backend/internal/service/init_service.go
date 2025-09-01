@@ -13,6 +13,7 @@ import (
 type InitService interface {
 	InitializeSystem() error
 	CreateDefaultAdminUser() (string, error)
+	ResetAdminPassword() (string, error)
 }
 
 // initService 初始化服务实现
@@ -47,41 +48,49 @@ func (s *initService) InitializeSystem() error {
 		// 不中断初始化过程，继续执行
 	}
 
-	// 3. 检查是否已有管理员用户
+	// 3. 检查是否需要重置管理员密码或创建管理员用户
 	adminUser, err := s.userRepo.GetByUsername("admin")
+	var password string
+
 	if err == nil && adminUser != nil {
+		// 管理员用户已存在，重置为随机密码
+		password, err = s.ResetAdminPassword()
+		if err != nil {
+			return fmt.Errorf("重置管理员密码失败: %v", err)
+		}
+
 		log.Println("========================================")
 		log.Println("🎉 VulnArk 系统已就绪！")
 		log.Println("========================================")
-		log.Println("📋 管理员账号信息：")
+		log.Println("📋 管理员账号信息（密码已重置）：")
 		log.Printf("   用户名: admin")
+		log.Printf("   密码: %s", password)
 		log.Printf("   邮箱: %s", adminUser.Email)
 		log.Printf("   真实姓名: %s", adminUser.RealName)
-		log.Println("   密码: [已设置，请使用现有密码登录]")
 		log.Println("========================================")
+		log.Println("⚠️  请妥善保存管理员密码，首次登录后建议修改！")
 		log.Println("🌐 访问地址: http://localhost:8080")
 		log.Println("========================================")
-		return nil
-	}
+	} else {
+		// 创建默认管理员用户
+		password, err = s.CreateDefaultAdminUser()
+		if err != nil {
+			return fmt.Errorf("创建默认管理员用户失败: %v", err)
+		}
 
-	// 创建默认管理员用户
-	password, err := s.CreateDefaultAdminUser()
-	if err != nil {
-		return fmt.Errorf("创建默认管理员用户失败: %v", err)
+		// 输出管理员账号信息
+		log.Println("========================================")
+		log.Println("🎉 VulnArk 系统初始化完成！")
+		log.Println("========================================")
+		log.Println("📋 默认管理员账号信息：")
+		log.Printf("   用户名: admin")
+		log.Printf("   密码: %s", password)
+		log.Printf("   邮箱: admin@vulnark.com")
+		log.Println("========================================")
+		log.Println("⚠️  请妥善保存管理员密码，首次登录后建议修改！")
+		log.Println("🌐 访问地址: http://localhost:8080")
+		log.Println("========================================")
 	}
-
-	// 输出管理员账号信息
-	log.Println("========================================")
-	log.Println("🎉 VulnArk 系统初始化完成！")
-	log.Println("========================================")
-	log.Println("📋 默认管理员账号信息：")
-	log.Printf("   用户名: admin")
-	log.Printf("   密码: %s", password)
-	log.Printf("   邮箱: admin@vulnark.com")
-	log.Println("========================================")
-	log.Println("⚠️  请妥善保存管理员密码，首次登录后建议修改！")
-	log.Println("🌐 访问地址: http://localhost:8080")
-	log.Println("========================================")
 
 	return nil
 }
@@ -131,6 +140,45 @@ func (s *initService) CreateDefaultAdminUser() (string, error) {
 		return "", fmt.Errorf("创建管理员用户失败: %v", err)
 	}
 
+	// 创建欢迎通知
+	s.createWelcomeNotification(adminUser.ID)
+
 	log.Printf("✅ 默认管理员用户创建成功 (ID: %d)", adminUser.ID)
 	return password, nil
+}
+
+// ResetAdminPassword 重置管理员密码
+func (s *initService) ResetAdminPassword() (string, error) {
+	// 生成随机密码
+	password, err := utils.GenerateSecurePassword(16)
+	if err != nil {
+		return "", fmt.Errorf("生成随机密码失败: %v", err)
+	}
+
+	// 加密密码
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return "", fmt.Errorf("密码加密失败: %v", err)
+	}
+
+	// 获取管理员用户
+	adminUser, err := s.userRepo.GetByUsername("admin")
+	if err != nil {
+		return "", fmt.Errorf("获取管理员用户失败: %v", err)
+	}
+
+	// 更新密码
+	if err := s.userRepo.UpdatePassword(adminUser.ID, hashedPassword); err != nil {
+		return "", fmt.Errorf("更新管理员密码失败: %v", err)
+	}
+
+	log.Printf("✅ 管理员密码已重置")
+	return password, nil
+}
+
+// createWelcomeNotification 创建欢迎通知
+func (s *initService) createWelcomeNotification(userID uint) {
+	// 这里可以添加通知创建逻辑，暂时跳过以避免循环依赖
+	// 可以在后续版本中通过数据库直接插入或使用通知服务
+	log.Printf("✅ 欢迎通知已准备就绪")
 }

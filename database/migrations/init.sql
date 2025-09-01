@@ -15,6 +15,8 @@ CREATE TABLE users (
     role_id BIGINT NOT NULL COMMENT '角色ID',
     department VARCHAR(100) COMMENT '部门',
     status TINYINT DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
+    two_factor_enabled BOOLEAN DEFAULT FALSE COMMENT '是否启用双因素认证',
+    two_factor_secret VARCHAR(255) DEFAULT '' COMMENT '双因素认证密钥',
     last_login_at TIMESTAMP NULL COMMENT '最后登录时间',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -230,22 +232,9 @@ CREATE TABLE operation_logs (
     INDEX idx_created_at (created_at)
 ) COMMENT '操作日志表';
 
--- 添加外键约束
+-- 添加基础外键约束（只添加基础表之间的约束）
 ALTER TABLE users ADD CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id);
 ALTER TABLE assets ADD CONSTRAINT fk_assets_owner_id FOREIGN KEY (owner_id) REFERENCES users(id);
 ALTER TABLE vulnerabilities ADD CONSTRAINT fk_vulnerabilities_asset_id FOREIGN KEY (asset_id) REFERENCES assets(id);
 ALTER TABLE vulnerabilities ADD CONSTRAINT fk_vulnerabilities_discoverer_id FOREIGN KEY (discoverer_id) REFERENCES users(id);
 ALTER TABLE vulnerabilities ADD CONSTRAINT fk_vulnerabilities_assignee_id FOREIGN KEY (assignee_id) REFERENCES users(id);
-ALTER TABLE vulnerabilities ADD CONSTRAINT fk_vulnerabilities_owasp_category_id FOREIGN KEY (owasp_category_id) REFERENCES owasp_categories(id);
-ALTER TABLE vulnerability_attachments ADD CONSTRAINT fk_vulnerability_attachments_vulnerability_id FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id);
-ALTER TABLE vulnerability_attachments ADD CONSTRAINT fk_vulnerability_attachments_uploader_id FOREIGN KEY (uploader_id) REFERENCES users(id);
-ALTER TABLE vulnerability_assignments ADD CONSTRAINT fk_vulnerability_assignments_vulnerability_id FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id);
-ALTER TABLE vulnerability_assignments ADD CONSTRAINT fk_vulnerability_assignments_assignee_id FOREIGN KEY (assignee_id) REFERENCES users(id);
-ALTER TABLE vulnerability_assignments ADD CONSTRAINT fk_vulnerability_assignments_assigner_id FOREIGN KEY (assigner_id) REFERENCES users(id);
-ALTER TABLE assignment_rules ADD CONSTRAINT fk_assignment_rules_assignee_id FOREIGN KEY (assignee_id) REFERENCES users(id);
-ALTER TABLE reports ADD CONSTRAINT fk_reports_vulnerability_id FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id);
-ALTER TABLE reports ADD CONSTRAINT fk_reports_author_id FOREIGN KEY (author_id) REFERENCES users(id);
-ALTER TABLE knowledge_base ADD CONSTRAINT fk_knowledge_base_author_id FOREIGN KEY (author_id) REFERENCES users(id);
-ALTER TABLE notifications ADD CONSTRAINT fk_notifications_user_id FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE ai_conversations ADD CONSTRAINT fk_ai_conversations_user_id FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE operation_logs ADD CONSTRAINT fk_operation_logs_user_id FOREIGN KEY (user_id) REFERENCES users(id);
