@@ -15,9 +15,9 @@ type AssetController struct {
 }
 
 // NewAssetController 创建资产控制器
-func NewAssetController() *AssetController {
+func NewAssetController(assetService service.AssetService) *AssetController {
 	return &AssetController{
-		assetService: service.NewAssetService(),
+		assetService: assetService,
 	}
 }
 

@@ -27,10 +27,10 @@ type assetService struct {
 }
 
 // NewAssetService 创建资产服务
-func NewAssetService() AssetService {
+func NewAssetService(assetRepo repository.AssetRepository, userRepo repository.UserRepository) AssetService {
 	return &assetService{
-		assetRepo: repository.NewAssetRepository(),
-		userRepo:  repository.NewUserRepository(),
+		assetRepo: assetRepo,
+		userRepo:  userRepo,
 	}
 }
 

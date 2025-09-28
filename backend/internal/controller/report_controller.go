@@ -16,9 +16,9 @@ type ReportController struct {
 }
 
 // NewReportController 创建报告控制器
-func NewReportController() *ReportController {
+func NewReportController(reportService service.ReportService) *ReportController {
 	return &ReportController{
-		reportService: service.NewReportService(),
+		reportService: reportService,
 	}
 }
 

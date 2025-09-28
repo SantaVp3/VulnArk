@@ -13,9 +13,9 @@ type AnalyticsController struct {
 }
 
 // NewAnalyticsController 创建统计分析控制器
-func NewAnalyticsController() *AnalyticsController {
+func NewAnalyticsController(analyticsService service.AnalyticsService) *AnalyticsController {
 	return &AnalyticsController{
-		analyticsService: service.NewAnalyticsService(),
+		analyticsService: analyticsService,
 	}
 }
 

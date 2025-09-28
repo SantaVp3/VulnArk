@@ -43,14 +43,14 @@ type assignmentService struct {
 }
 
 // NewAssignmentService 创建分配服务
-func NewAssignmentService() AssignmentService {
+func NewAssignmentService(assignmentRepo repository.AssignmentRepository, ruleRepo repository.AssignmentRuleRepository, timelineRepo repository.TimelineRepository, vulnRepo repository.VulnerabilityRepository, userRepo repository.UserRepository, assetRepo repository.AssetRepository) AssignmentService {
 	return &assignmentService{
-		assignmentRepo: repository.NewAssignmentRepository(),
-		ruleRepo:       repository.NewAssignmentRuleRepository(),
-		timelineRepo:   repository.NewTimelineRepository(),
-		vulnRepo:       repository.NewVulnerabilityRepository(),
-		userRepo:       repository.NewUserRepository(),
-		assetRepo:      repository.NewAssetRepository(),
+		assignmentRepo: assignmentRepo,
+		ruleRepo:       ruleRepo,
+		timelineRepo:   timelineRepo,
+		vulnRepo:       vulnRepo,
+		userRepo:       userRepo,
+		assetRepo:      assetRepo,
 	}
 }
 

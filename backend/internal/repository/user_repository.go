@@ -5,7 +5,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // UserRepository 用户仓储接口
@@ -28,9 +27,9 @@ type userRepository struct {
 }
 
 // NewUserRepository 创建用户仓储
-func NewUserRepository() UserRepository {
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -156,9 +155,9 @@ type roleRepository struct {
 }
 
 // NewRoleRepository 创建角色仓储
-func NewRoleRepository() RoleRepository {
+func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

@@ -49,13 +49,13 @@ type AIMessage struct {
 
 // AIProvider AI提供商信息
 type AIProvider struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
-	Description  string   `json:"description"`
-	APIURL       string   `json:"api_url"`
-	Models       []string `json:"models"`
-	DefaultModel string   `json:"default_model"`
-	RequiresKey  bool     `json:"requires_key"`
+	ID           string   `json:"id" gorm:"primarykey"`
+	Name         string   `json:"name" gorm:"size:100;not null"`
+	Description  string   `json:"description" gorm:"size:255"`
+	APIURL       string   `json:"api_url" gorm:"size:255"`
+	Models       []string `json:"models" gorm:"type:json"`
+	DefaultModel string   `json:"default_model" gorm:"size:100"`
+	RequiresKey  bool     `json:"requires_key" gorm:"default:true"`
 }
 
 // GetSupportedProviders 获取支持的AI提供商列表

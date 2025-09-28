@@ -16,9 +16,9 @@ type AssignmentController struct {
 }
 
 // NewAssignmentController 创建分配控制器
-func NewAssignmentController() *AssignmentController {
+func NewAssignmentController(assignmentService service.AssignmentService) *AssignmentController {
 	return &AssignmentController{
-		assignmentService: service.NewAssignmentService(),
+		assignmentService: assignmentService,
 	}
 }
 

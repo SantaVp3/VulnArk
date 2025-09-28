@@ -17,10 +17,10 @@ type UserController struct {
 }
 
 // NewUserController 创建用户控制器
-func NewUserController() *UserController {
+func NewUserController(userService service.UserService, roleService service.RoleService) *UserController {
 	return &UserController{
-		userService: service.NewUserService(),
-		roleService: service.NewRoleService(),
+		userService: userService,
+		roleService: roleService,
 	}
 }
 

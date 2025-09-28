@@ -8,7 +8,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // PermissionRepository 权限仓储接口
@@ -30,9 +29,9 @@ type permissionRepository struct {
 }
 
 // NewPermissionRepository 创建权限仓储
-func NewPermissionRepository() PermissionRepository {
+func NewPermissionRepository(db *gorm.DB) PermissionRepository {
 	return &permissionRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -129,9 +128,9 @@ type rolePermissionRepository struct {
 }
 
 // NewRolePermissionRepository 创建角色权限仓储
-func NewRolePermissionRepository() RolePermissionRepository {
+func NewRolePermissionRepository(db *gorm.DB) RolePermissionRepository {
 	return &rolePermissionRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -196,9 +195,9 @@ type systemConfigRepository struct {
 }
 
 // NewSystemConfigRepository 创建系统配置仓储
-func NewSystemConfigRepository() SystemConfigRepository {
+func NewSystemConfigRepository(db *gorm.DB) SystemConfigRepository {
 	return &systemConfigRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -266,9 +265,9 @@ type auditLogRepository struct {
 }
 
 // NewAuditLogRepository 创建审计日志仓储
-func NewAuditLogRepository() AuditLogRepository {
+func NewAuditLogRepository(db *gorm.DB) AuditLogRepository {
 	return &auditLogRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

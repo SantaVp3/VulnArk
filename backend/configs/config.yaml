@@ -9,16 +9,14 @@ server:
   host: ""  # 空字符串表示监听所有接口（IPv4和IPv6）
   port: "8080"
   mode: "release"  # debug, release, test - 生产环境请使用release
-  read_timeout: 60
-  write_timeout: 60
+  read_timeout: 120    # 增加到2分钟
+  write_timeout: 120   # 增加到2分钟
 
 # CORS跨域配置
 cors:
   enabled: true  # 是否启用CORS
   allowed_origins:
-    - "http://10.211.55.6:8080"  # 生产环境访问地址
-    - "http://localhost:8080"    # 本地访问地址
-    - "http://127.0.0.1:8080"    # 本地回环地址
+    - "*"  # 生产环境允许所有来源（可根据需要限制具体域名）
   allowed_methods:
     - "GET"
     - "POST"
@@ -44,8 +42,8 @@ cors:
 database:
   host: "localhost"
   port: 3306
-  username: "vulnark"
-  password: "vulnark123"  # ⚠️ 请修改为您的数据库密码
+  username: "root"
+  password: "123456"  # ⚠️ 请修改为您的数据库密码
   database: "vulnark"
   charset: "utf8mb4"
 
@@ -71,7 +69,7 @@ email:
 storage:
   type: "local"  # local, oss, s3
   local_path: "./uploads"  # 本地存储路径
-  base_url: "http://0.0.0.0:8080/uploads"  # 文件访问基础URL
+  base_url: "/uploads"  # 文件访问基础URL（使用相对路径适应不同部署环境）
 
 log:
   level: "info"  # debug, info, warn, error

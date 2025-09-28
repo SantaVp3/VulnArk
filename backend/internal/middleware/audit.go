@@ -13,8 +13,7 @@ import (
 )
 
 // AuditMiddleware 审计日志中间件
-func AuditMiddleware() gin.HandlerFunc {
-	auditService := service.NewAuditLogService()
+func AuditMiddleware(auditService service.AuditLogService) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		// 记录开始时间
@@ -198,8 +197,7 @@ func isNumeric(s string) bool {
 }
 
 // RequirePermission 权限检查中间件
-func RequirePermission(permissionName string) gin.HandlerFunc {
-	permissionService := service.NewPermissionService()
+func RequirePermission(permissionName string, permissionService service.PermissionService) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		userID, exists := GetCurrentUserID(c)
@@ -236,9 +234,7 @@ func RequirePermission(permissionName string) gin.HandlerFunc {
 }
 
 // AuditLogCleanupTask 审计日志清理任务
-func AuditLogCleanupTask() {
-	auditService := service.NewAuditLogService()
-	configService := service.NewSystemConfigService()
+func AuditLogCleanupTask(auditService service.AuditLogService, configService service.SystemConfigService) {
 
 	// 获取日志保留天数配置
 	config, err := configService.GetConfigByKey("audit.log_retention_days")

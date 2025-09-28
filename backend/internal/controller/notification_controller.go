@@ -16,9 +16,9 @@ type NotificationController struct {
 }
 
 // NewNotificationController 创建通知控制器
-func NewNotificationController() *NotificationController {
+func NewNotificationController(notificationService service.NotificationService) *NotificationController {
 	return &NotificationController{
-		notificationService: service.NewNotificationService(),
+		notificationService: notificationService,
 	}
 }
 

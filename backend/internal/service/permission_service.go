@@ -39,12 +39,12 @@ type permissionService struct {
 }
 
 // NewPermissionService 创建权限服务
-func NewPermissionService() PermissionService {
+func NewPermissionService(permissionRepo repository.PermissionRepository, rolePermissionRepo repository.RolePermissionRepository, roleRepo repository.RoleRepository, userRepo repository.UserRepository) PermissionService {
 	return &permissionService{
-		permissionRepo:     repository.NewPermissionRepository(),
-		rolePermissionRepo: repository.NewRolePermissionRepository(),
-		roleRepo:           repository.NewRoleRepository(),
-		userRepo:           repository.NewUserRepository(),
+		permissionRepo:     permissionRepo,
+		rolePermissionRepo: rolePermissionRepo,
+		roleRepo:           roleRepo,
+		userRepo:           userRepo,
 	}
 }
 
@@ -281,9 +281,9 @@ type systemConfigService struct {
 }
 
 // NewSystemConfigService 创建系统配置服务
-func NewSystemConfigService() SystemConfigService {
+func NewSystemConfigService(configRepo repository.SystemConfigRepository) SystemConfigService {
 	return &systemConfigService{
-		configRepo: repository.NewSystemConfigRepository(),
+		configRepo: configRepo,
 	}
 }
 
@@ -421,9 +421,9 @@ type auditLogService struct {
 }
 
 // NewAuditLogService 创建审计日志服务
-func NewAuditLogService() AuditLogService {
+func NewAuditLogService(auditRepo repository.AuditLogRepository) AuditLogService {
 	return &auditLogService{
-		auditRepo: repository.NewAuditLogRepository(),
+		auditRepo: auditRepo,
 	}
 }
 

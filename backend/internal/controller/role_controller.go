@@ -15,9 +15,9 @@ type RoleController struct {
 }
 
 // NewRoleController 创建角色控制器
-func NewRoleController() *RoleController {
+func NewRoleController(roleService service.RoleService) *RoleController {
 	return &RoleController{
-		roleService: service.NewRoleService(),
+		roleService: roleService,
 	}
 }
 

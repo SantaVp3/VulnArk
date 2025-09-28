@@ -18,11 +18,11 @@ type KnowledgeController struct {
 }
 
 // NewKnowledgeController 创建知识库控制器
-func NewKnowledgeController() *KnowledgeController {
+func NewKnowledgeController(knowledgeService service.KnowledgeService, tagService service.TagService, templateService service.TemplateService) *KnowledgeController {
 	return &KnowledgeController{
-		knowledgeService: service.NewKnowledgeService(),
-		tagService:       service.NewTagService(),
-		templateService:  service.NewTemplateService(),
+		knowledgeService: knowledgeService,
+		tagService:       tagService,
+		templateService:  templateService,
 	}
 }
 

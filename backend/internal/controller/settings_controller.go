@@ -14,9 +14,9 @@ type SettingsController struct {
 }
 
 // NewSettingsController 创建设置控制器
-func NewSettingsController() *SettingsController {
+func NewSettingsController(settingsService service.SettingsService) *SettingsController {
 	return &SettingsController{
-		settingsService: service.NewSettingsService(),
+		settingsService: settingsService,
 	}
 }
 

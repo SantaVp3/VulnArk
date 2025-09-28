@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"vulnark/internal/config"
+	"vulnark/internal/container"
 	"vulnark/internal/middleware"
 	"vulnark/internal/router"
 	"vulnark/internal/service"
@@ -50,8 +51,17 @@ func main() {
 	database.InitDatabase()
 	defer database.CloseDatabase()
 
+	// 执行数据库表迁移
+	if err := database.AutoMigrateModels(); err != nil {
+		logger.Errorf("数据库表迁移失败: %v", err)
+		// 不中断程序，继续执行，让SQL迁移作为备选方案
+	}
+
+	// 初始化依赖注入容器
+	appContainer := container.NewContainer()
+
 	// 初始化系统（创建默认管理员账号等）
-	initService := service.NewInitService()
+	initService := service.NewInitService(appContainer.UserRepo)
 	if err := initService.InitializeSystem(); err != nil {
 		logger.Fatalf("系统初始化失败: %v", err)
 	}
@@ -66,6 +76,7 @@ func main() {
 	r.Use(middleware.RecoveryMiddleware())
 	r.Use(middleware.RequestLoggerMiddleware())
 	r.Use(middleware.CORSMiddleware())
+	r.Use(middleware.FirstDeployMiddleware())
 
 	// 健康检查接口
 	r.GET("/health", func(c *gin.Context) {
@@ -76,17 +87,17 @@ func main() {
 		})
 	})
 
-	// 设置API路由
-	router.SetupRoutes(r)
+	// 设置API路由（使用依赖注入容器）
+	router.SetupRoutes(r, appContainer)
 
 	// 服务前端静态文件
-	r.Static("/assets", "../web/assets")
-	r.StaticFile("/vite.svg", "../web/vite.svg")
+	r.Static("/assets", "./web/assets")
+	r.StaticFile("/vite.svg", "./web/vite.svg")
 
 	// 配置JavaScript文件的正确MIME类型
 	r.GET("/config.js", func(c *gin.Context) {
 		c.Header("Content-Type", "application/javascript; charset=utf-8")
-		c.File("../web/config.js")
+		c.File("./web/config.js")
 	})
 
 	// 处理前端路由 - 所有非API请求都返回index.html
@@ -98,7 +109,7 @@ func main() {
 			return
 		}
 		// 否则返回前端index.html (支持前端路由)
-		c.File("../web/index.html")
+		c.File("./web/index.html")
 	})
 
 	// 启动服务器

@@ -40,11 +40,11 @@ type knowledgeService struct {
 }
 
 // NewKnowledgeService 创建知识库服务
-func NewKnowledgeService() KnowledgeService {
+func NewKnowledgeService(knowledgeRepo repository.KnowledgeRepository, tagRepo repository.TagRepository, userRepo repository.UserRepository) KnowledgeService {
 	return &knowledgeService{
-		knowledgeRepo: repository.NewKnowledgeRepository(),
-		tagRepo:       repository.NewTagRepository(),
-		userRepo:      repository.NewUserRepository(),
+		knowledgeRepo: knowledgeRepo,
+		tagRepo:       tagRepo,
+		userRepo:      userRepo,
 	}
 }
 
@@ -309,9 +309,9 @@ type tagService struct {
 }
 
 // NewTagService 创建标签服务
-func NewTagService() TagService {
+func NewTagService(tagRepo repository.TagRepository) TagService {
 	return &tagService{
-		tagRepo: repository.NewTagRepository(),
+		tagRepo: tagRepo,
 	}
 }
 
@@ -415,9 +415,9 @@ type templateService struct {
 }
 
 // NewTemplateService 创建模板服务
-func NewTemplateService() TemplateService {
+func NewTemplateService(templateRepo repository.TemplateRepository) TemplateService {
 	return &templateService{
-		templateRepo: repository.NewTemplateRepository(),
+		templateRepo: templateRepo,
 	}
 }
 

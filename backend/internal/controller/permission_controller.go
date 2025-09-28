@@ -16,9 +16,9 @@ type PermissionController struct {
 }
 
 // NewPermissionController 创建权限控制器
-func NewPermissionController() *PermissionController {
+func NewPermissionController(permissionService service.PermissionService) *PermissionController {
 	return &PermissionController{
-		permissionService: service.NewPermissionService(),
+		permissionService: permissionService,
 	}
 }
 

@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // NotificationRepository 通知仓储接口
@@ -31,9 +30,9 @@ type notificationRepository struct {
 }
 
 // NewNotificationRepository 创建通知仓储
-func NewNotificationRepository() NotificationRepository {
+func NewNotificationRepository(db *gorm.DB) NotificationRepository {
 	return &notificationRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -264,9 +263,9 @@ type emailTemplateRepository struct {
 }
 
 // NewEmailTemplateRepository 创建邮件模板仓储
-func NewEmailTemplateRepository() EmailTemplateRepository {
+func NewEmailTemplateRepository(db *gorm.DB) EmailTemplateRepository {
 	return &emailTemplateRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -339,9 +338,9 @@ type emailLogRepository struct {
 }
 
 // NewEmailLogRepository 创建邮件日志仓储
-func NewEmailLogRepository() EmailLogRepository {
+func NewEmailLogRepository(db *gorm.DB) EmailLogRepository {
 	return &emailLogRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -406,9 +405,9 @@ type notificationSettingRepository struct {
 }
 
 // NewNotificationSettingRepository 创建通知设置仓储
-func NewNotificationSettingRepository() NotificationSettingRepository {
+func NewNotificationSettingRepository(db *gorm.DB) NotificationSettingRepository {
 	return &notificationSettingRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

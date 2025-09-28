@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // AssignmentRepository 分配仓储接口
@@ -22,10 +21,10 @@ type assignmentRepository struct {
 	db *gorm.DB
 }
 
-// NewAssignmentRepository 创建分配仓储
-func NewAssignmentRepository() AssignmentRepository {
+// NewAssignmentRepository 创建任务分配仓储
+func NewAssignmentRepository(db *gorm.DB) AssignmentRepository {
 	return &assignmentRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -126,9 +125,9 @@ type assignmentRuleRepository struct {
 }
 
 // NewAssignmentRuleRepository 创建分配规则仓储
-func NewAssignmentRuleRepository() AssignmentRuleRepository {
+func NewAssignmentRuleRepository(db *gorm.DB) AssignmentRuleRepository {
 	return &assignmentRuleRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -235,9 +234,9 @@ type timelineRepository struct {
 }
 
 // NewTimelineRepository 创建时间线仓储
-func NewTimelineRepository() TimelineRepository {
+func NewTimelineRepository(db *gorm.DB) TimelineRepository {
 	return &timelineRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

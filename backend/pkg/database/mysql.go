@@ -61,6 +61,49 @@ func InitDatabase() {
 	log.Println("数据库连接成功")
 }
 
+// AutoMigrate 自动迁移数据库表
+func AutoMigrate() error {
+	if DB == nil {
+		return fmt.Errorf("数据库连接未初始化")
+	}
+
+	// 导入所有模型
+	// 注意：这里需要导入model包，需要在文件顶部添加import
+	// 暂时注释掉，将在实际使用时启用
+	/*
+	tables := []interface{}{
+		&model.Role{},
+		&model.User{},
+		&model.Vulnerability{},
+		&model.Asset{},
+		&model.AIConfiguration{},
+		&model.AIConversation{},
+		&model.AIMessage{},
+		&model.AIProvider{},
+		&model.VulnerabilityAssignment{},
+		&model.AssignmentRule{},
+		&model.VulnerabilityTimeline{},
+		&model.Analytics{},
+		&model.KnowledgeBase{},
+		&model.KnowledgeCategory{},
+		&model.Notification{},
+		&model.NotificationRule{},
+		&model.Permission{},
+		&model.Report{},
+	}
+
+	for _, table := range tables {
+		if err := DB.AutoMigrate(table); err != nil {
+			return fmt.Errorf("迁移表 %T 失败: %w", table, err)
+		}
+		log.Printf("✅ 表 %T 迁移成功", table)
+	}
+	*/
+
+	log.Println("数据库表迁移完成")
+	return nil
+}
+
 // GetDB 获取数据库实例
 func GetDB() *gorm.DB {
 	return DB

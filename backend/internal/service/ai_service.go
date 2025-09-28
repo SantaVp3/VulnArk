@@ -41,9 +41,9 @@ type aiService struct {
 }
 
 // NewAIService 创建AI服务
-func NewAIService() AIService {
+func NewAIService(aiRepo repository.AIRepository) AIService {
 	return &aiService{
-		aiRepo: repository.NewAIRepository(),
+		aiRepo: aiRepo,
 		config: config.AppConfig,
 	}
 }

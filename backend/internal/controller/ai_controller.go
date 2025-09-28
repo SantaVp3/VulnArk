@@ -17,9 +17,9 @@ type AIController struct {
 }
 
 // NewAIController 创建AI控制器
-func NewAIController() *AIController {
+func NewAIController(aiService service.AIService) *AIController {
 	return &AIController{
-		aiService: service.NewAIService(),
+		aiService: aiService,
 	}
 }
 

@@ -49,13 +49,13 @@ type reportService struct {
 }
 
 // NewReportService 创建报告服务
-func NewReportService() ReportService {
+func NewReportService(reportRepo repository.ReportRepository, commentRepo repository.ReportCommentRepository, attachmentRepo repository.FileAttachmentRepository, userRepo repository.UserRepository, assetRepo repository.AssetRepository) ReportService {
 	return &reportService{
-		reportRepo:     repository.NewReportRepository(),
-		commentRepo:    repository.NewReportCommentRepository(),
-		attachmentRepo: repository.NewFileAttachmentRepository(),
-		userRepo:       repository.NewUserRepository(),
-		assetRepo:      repository.NewAssetRepository(),
+		reportRepo:     reportRepo,
+		commentRepo:    commentRepo,
+		attachmentRepo: attachmentRepo,
+		userRepo:       userRepo,
+		assetRepo:      assetRepo,
 		storageService: storage.NewStorageService(),
 	}
 }

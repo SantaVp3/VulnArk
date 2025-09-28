@@ -1,7 +1,7 @@
 package router
 
 import (
-	"vulnark/internal/controller"
+	"vulnark/internal/container"
 	"vulnark/internal/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -10,23 +10,28 @@ import (
 )
 
 // SetupRoutes 设置路由
-func SetupRoutes(r *gin.Engine) {
-	// 创建控制器实例
-	userController := controller.NewUserController()
-	roleController := controller.NewRoleController()
-	assetController := controller.NewAssetController()
-	vulnController := controller.NewVulnerabilityController()
-	assignmentController := controller.NewAssignmentController()
-	reportController := controller.NewReportController()
-	notificationController := controller.NewNotificationController()
-	permissionController := controller.NewPermissionController()
-	systemController := controller.NewSystemController()
-	knowledgeController := controller.NewKnowledgeController()
-	analyticsController := controller.NewAnalyticsController()
-	apiTestController := controller.NewAPITestController()
-	apiVersionController := controller.NewAPIVersionController()
-	settingsController := controller.NewSettingsController()
-	aiController := controller.NewAIController()
+func SetupRoutes(r *gin.Engine, c *container.Container) {
+	// 使用依赖注入容器中的控制器实例
+	userController := c.UserController
+	assetController := c.AssetController
+	vulnController := c.VulnController
+	roleController := c.RoleController
+	assignmentController := c.AssignmentController
+	reportController := c.ReportController
+	notificationController := c.NotificationController
+	permissionController := c.PermissionController
+	systemController := c.SystemController
+	knowledgeController := c.KnowledgeController
+	analyticsController := c.AnalyticsController
+	apiTestController := c.APITestController
+	apiVersionController := c.APIVersionController
+	settingsController := c.SettingsController
+	aiController := c.AIController
+
+	// 辅助函数简化权限中间件调用
+	requirePermission := func(permission string) gin.HandlerFunc {
+		return middleware.RequirePermission(permission, c.PermissionService)
+	}
 
 	// 全局中间件
 	r.Use(middleware.GlobalRateLimit()) // 全局速率限制
@@ -71,7 +76,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 用户管理（需要管理员权限）
 			users := auth.Group("/users")
-			users.Use(middleware.RequirePermission("user:manage"))
+			users.Use(requirePermission("user:manage"))
 			{
 				users.GET("/departments", userController.GetDepartmentOptions) // 部门选项
 				users.POST("", userController.CreateUser)
@@ -82,11 +87,11 @@ func SetupRoutes(r *gin.Engine) {
 			}
 
 			// 角色选项（用于用户创建，需要用户管理权限）
-			auth.GET("/roles/options", middleware.RequirePermission("user:manage"), roleController.GetRoleOptions)
+			auth.GET("/roles/options", requirePermission("user:manage"), roleController.GetRoleOptions)
 
 			// 角色管理（需要管理员权限）
 			roles := auth.Group("/roles")
-			roles.Use(middleware.RequirePermission("role:manage"))
+			roles.Use(requirePermission("role:manage"))
 			{
 				roles.POST("", roleController.CreateRole)
 				roles.GET("", roleController.GetRoleList)
@@ -97,7 +102,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 资产管理
 			assets := auth.Group("/assets")
-			assets.Use(middleware.RequirePermission("asset:read")) // 基础权限检查
+			assets.Use(requirePermission("asset:read")) // 基础权限检查
 			{
 				assets.POST("", assetController.CreateAsset)
 				assets.GET("", assetController.GetAssetList)
@@ -112,7 +117,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 漏洞管理
 			vulnerabilities := auth.Group("/vulnerabilities")
-			vulnerabilities.Use(middleware.RequirePermission("vuln:read")) // 基础权限检查
+			vulnerabilities.Use(requirePermission("vuln:read")) // 基础权限检查
 			{
 				vulnerabilities.POST("", vulnController.CreateVulnerability)
 				vulnerabilities.GET("", vulnController.GetVulnerabilityList)
@@ -132,7 +137,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// 分配规则管理
 			assignmentRules := auth.Group("/assignment-rules")
-			assignmentRules.Use(middleware.RequirePermission("vuln:manage")) // 分配权限检查
+			assignmentRules.Use(requirePermission("vuln:manage")) // 分配权限检查
 			{
 				assignmentRules.POST("", assignmentController.CreateAssignmentRule)
 				assignmentRules.GET("", assignmentController.GetAssignmentRuleList)
@@ -291,7 +296,7 @@ func SetupRoutes(r *gin.Engine) {
 
 			// API测试工具
 			apiTest := auth.Group("/api-test")
-			apiTest.Use(middleware.RequirePermission("api:test"))
+			apiTest.Use(requirePermission("api:test"))
 			apiTest.Use(middleware.APIRateLimit()) // API测试速率限制
 			{
 				apiTest.POST("/test", apiTestController.TestAPI)

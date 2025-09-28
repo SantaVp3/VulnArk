@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // ReportRepository 报告仓储接口
@@ -28,9 +27,9 @@ type reportRepository struct {
 }
 
 // NewReportRepository 创建报告仓储
-func NewReportRepository() ReportRepository {
+func NewReportRepository(db *gorm.DB) ReportRepository {
 	return &reportRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -256,9 +255,9 @@ type reportCommentRepository struct {
 }
 
 // NewReportCommentRepository 创建报告评论仓储
-func NewReportCommentRepository() ReportCommentRepository {
+func NewReportCommentRepository(db *gorm.DB) ReportCommentRepository {
 	return &reportCommentRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -297,9 +296,9 @@ type fileAttachmentRepository struct {
 }
 
 // NewFileAttachmentRepository 创建文件附件仓储
-func NewFileAttachmentRepository() FileAttachmentRepository {
+func NewFileAttachmentRepository(db *gorm.DB) FileAttachmentRepository {
 	return &fileAttachmentRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

@@ -31,10 +31,10 @@ type userService struct {
 }
 
 // NewUserService 创建用户服务
-func NewUserService() UserService {
+func NewUserService(userRepo repository.UserRepository, roleRepo repository.RoleRepository) UserService {
 	return &userService{
-		userRepo:   repository.NewUserRepository(),
-		roleRepo:   repository.NewRoleRepository(),
+		userRepo:   userRepo,
+		roleRepo:   roleRepo,
 		jwtManager: auth.NewJWTManager(),
 	}
 }
@@ -279,9 +279,9 @@ type roleService struct {
 }
 
 // NewRoleService 创建角色服务
-func NewRoleService() RoleService {
+func NewRoleService(roleRepo repository.RoleRepository) RoleService {
 	return &roleService{
-		roleRepo: repository.NewRoleRepository(),
+		roleRepo: roleRepo,
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // AssetRepository 资产仓储接口
@@ -28,9 +27,9 @@ type assetRepository struct {
 }
 
 // NewAssetRepository 创建资产仓储
-func NewAssetRepository() AssetRepository {
+func NewAssetRepository(db *gorm.DB) AssetRepository {
 	return &assetRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

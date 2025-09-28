@@ -43,9 +43,9 @@ type analyticsService struct {
 }
 
 // NewAnalyticsService 创建统计分析服务
-func NewAnalyticsService() AnalyticsService {
+func NewAnalyticsService(analyticsRepo repository.AnalyticsRepository) AnalyticsService {
 	return &analyticsService{
-		analyticsRepo: repository.NewAnalyticsRepository(),
+		analyticsRepo: analyticsRepo,
 	}
 }
 

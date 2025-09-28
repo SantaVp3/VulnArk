@@ -12,7 +12,7 @@ type Role struct {
 	ID          uint        `json:"id" gorm:"primarykey"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
-	Name        string      `json:"name" gorm:"size:50;not null;uniqueIndex" binding:"required"`
+	Name        string      `json:"name" gorm:"size:50;not null" binding:"required"`
 	Description string      `json:"description" gorm:"size:255"`
 	Permissions Permissions `json:"permissions" gorm:"type:json"`
 	Users       []User      `json:"-" gorm:"foreignKey:RoleID"`
@@ -49,8 +49,8 @@ type User struct {
 	ID          uint       `json:"id" gorm:"primarykey"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
-	Username    string     `json:"username" gorm:"size:50;not null;uniqueIndex" binding:"required"`
-	Email       string     `json:"email" gorm:"size:100;not null;uniqueIndex" binding:"required,email"`
+	Username    string     `json:"username" gorm:"size:50;not null" binding:"required"`
+	Email       string     `json:"email" gorm:"size:100;not null" binding:"required,email"`
 	PasswordHash string    `json:"-" gorm:"size:255;not null"`
 	RealName    string     `json:"real_name" gorm:"size:50;not null" binding:"required"`
 	Phone       string     `json:"phone" gorm:"size:20"`

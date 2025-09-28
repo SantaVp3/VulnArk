@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // AIRepository AI仓储接口
@@ -46,9 +44,9 @@ func generateSessionID() string {
 }
 
 // NewAIRepository 创建AI仓储
-func NewAIRepository() AIRepository {
+func NewAIRepository(db *gorm.DB) AIRepository {
 	return &aiRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

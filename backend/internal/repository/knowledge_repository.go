@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // KnowledgeRepository 知识库仓储接口
@@ -33,9 +32,9 @@ type knowledgeRepository struct {
 }
 
 // NewKnowledgeRepository 创建知识库仓储
-func NewKnowledgeRepository() KnowledgeRepository {
+func NewKnowledgeRepository(db *gorm.DB) KnowledgeRepository {
 	return &knowledgeRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -298,9 +297,9 @@ type tagRepository struct {
 }
 
 // NewTagRepository 创建标签仓储
-func NewTagRepository() TagRepository {
+func NewTagRepository(db *gorm.DB) TagRepository {
 	return &tagRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 
@@ -398,9 +397,9 @@ type templateRepository struct {
 }
 
 // NewTemplateRepository 创建模板仓储
-func NewTemplateRepository() TemplateRepository {
+func NewTemplateRepository(db *gorm.DB) TemplateRepository {
 	return &templateRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

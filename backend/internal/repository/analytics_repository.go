@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 	"vulnark/internal/model"
-	"vulnark/pkg/database"
 )
 
 // AnalyticsRepository 统计分析仓储接口
@@ -43,10 +42,10 @@ type analyticsRepository struct {
 	db *gorm.DB
 }
 
-// NewAnalyticsRepository 创建统计分析仓储
-func NewAnalyticsRepository() AnalyticsRepository {
+// NewAnalyticsRepository 创建分析仓储
+func NewAnalyticsRepository(db *gorm.DB) AnalyticsRepository {
 	return &analyticsRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

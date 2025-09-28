@@ -1,10 +1,8 @@
 package repository
 
 import (
-	"vulnark/internal/model"
-	"vulnark/pkg/database"
-
 	"gorm.io/gorm"
+	"vulnark/internal/model"
 )
 
 // SettingsRepository 设置仓库接口
@@ -26,9 +24,9 @@ type settingsRepository struct {
 }
 
 // NewSettingsRepository 创建设置仓库
-func NewSettingsRepository() SettingsRepository {
+func NewSettingsRepository(db *gorm.DB) SettingsRepository {
 	return &settingsRepository{
-		db: database.GetDB(),
+		db: db,
 	}
 }
 

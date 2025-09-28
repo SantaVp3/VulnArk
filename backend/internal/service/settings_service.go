@@ -45,10 +45,10 @@ type settingsService struct {
 }
 
 // NewSettingsService 创建设置服务
-func NewSettingsService() SettingsService {
+func NewSettingsService(userRepo repository.UserRepository, settingsRepo repository.SettingsRepository) SettingsService {
 	return &settingsService{
-		userRepo:     repository.NewUserRepository(),
-		settingsRepo: repository.NewSettingsRepository(),
+		userRepo:     userRepo,
+		settingsRepo: settingsRepo,
 	}
 }
 

@@ -62,15 +62,15 @@ type notificationService struct {
 }
 
 // NewNotificationService 创建通知服务
-func NewNotificationService() NotificationService {
+func NewNotificationService(notificationRepo repository.NotificationRepository, templateRepo repository.EmailTemplateRepository, logRepo repository.EmailLogRepository, settingRepo repository.NotificationSettingRepository, userRepo repository.UserRepository, vulnRepo repository.VulnerabilityRepository, reportRepo repository.ReportRepository) NotificationService {
 	return &notificationService{
-		notificationRepo: repository.NewNotificationRepository(),
-		templateRepo:     repository.NewEmailTemplateRepository(),
-		logRepo:          repository.NewEmailLogRepository(),
-		settingRepo:      repository.NewNotificationSettingRepository(),
-		userRepo:         repository.NewUserRepository(),
-		vulnRepo:         repository.NewVulnerabilityRepository(),
-		reportRepo:       repository.NewReportRepository(),
+		notificationRepo: notificationRepo,
+		templateRepo:     templateRepo,
+		logRepo:          logRepo,
+		settingRepo:      settingRepo,
+		userRepo:         userRepo,
+		vulnRepo:         vulnRepo,
+		reportRepo:       reportRepo,
 		emailService:     email.NewEmailService(),
 	}
 }
