@@ -249,10 +249,14 @@ swag init -g cmd/main.go
 go test ./...
 ```
 
+## 作者
+
+<a href="https://github.com/SantaVp3">
+  <img src="https://github.com/SantaVp3.png" width="80" height="80" style="border-radius: 50%;" alt="SantaVp3"/>
+</a>
+
+**[SantaVp3](https://github.com/SantaVp3)**
+
 ## 许可证
 
 MIT License
-
-## 联系方式
-
-- GitHub: [SantaVp3/VulnArk](https://github.com/SantaVp3/VulnArk)
