@@ -1,0 +1,82 @@
+# VulnArk 配置文件
+# ⚠️  安全提醒：
+# 1. 请修改默认的JWT密钥和数据库密码
+# 2. 生产环境请将server.mode设置为"release"
+# 3. 确保此配置文件的权限设置为600 (chmod 600 config.yaml)
+# 4. 不要将包含真实密码的配置文件提交到版本控制系统
+
+server:
+  host: ""  # 空字符串表示监听所有接口（IPv4和IPv6）
+  port: "8080"
+  mode: "release"  # debug, release, test - 生产环境请使用release
+  read_timeout: 120    # 增加到2分钟
+  write_timeout: 120   # 增加到2分钟
+
+# CORS跨域配置
+cors:
+  enabled: true  # 是否启用CORS
+  allowed_origins:
+    - "*"  # 生产环境允许所有来源（可根据需要限制具体域名）
+  allowed_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "PATCH"
+    - "DELETE"
+    - "HEAD"
+    - "OPTIONS"
+  allowed_headers:
+    - "Origin"
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+    - "X-Requested-With"
+    - "Accept"
+  exposed_headers:
+    - "Content-Length"
+    - "Content-Type"
+    - "Authorization"
+  allow_credentials: true
+  max_age: 43200  # 12小时 (12 * 60 * 60)
+
+database:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "123456"  # MySQL root密码
+  database: "vulnark"
+  charset: "utf8mb4"
+
+jwt:
+  secret: "ky6oJtR8MlYpMzJxhaVjWI1O4yeVUbkIJkJdGBzUt89lWifjWuZ1VDgqi68ciRKU"  # ⚠️ 请修改为安全的密钥
+  expire_time: 3600  # 1小时
+
+oss:
+  provider: "local"  # local, aliyun, aws
+  access_key_id: ""  # 如使用云存储，请填入访问密钥ID
+  access_key_secret: ""  # 如使用云存储，请填入访问密钥Secret
+  bucket: "vulnark-files"
+  endpoint: ""  # 云存储服务端点
+  region: ""    # 云存储区域
+
+email:
+  host: "smtp.qq.com"
+  port: 587
+  username: ""  # 邮件服务用户名
+  password: ""  # 邮件服务密码
+  from: ""      # 发件人邮箱地址
+
+storage:
+  type: "local"  # local, oss, s3
+  local_path: "./uploads"  # 本地存储路径
+  base_url: "/uploads"  # 文件访问基础URL（使用相对路径适应不同部署环境）
+
+log:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, text
+  output: "stdout"  # stdout, file
+
+# AI助手配置
+# AI助手功能已完全移至前端用户界面进行配置
+# 用户可以通过 设置 -> AI助手 页面进行个性化配置
+# 支持多种AI提供商：OpenAI、DeepSeek、通义千问等
